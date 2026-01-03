@@ -1,0 +1,2 @@
+# fikir
+fikilerimi yazdığım site
