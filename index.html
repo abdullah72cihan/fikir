@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akıllı Fikir Kutusu</title>
+    
+    <!-- React ve ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel (JSX Derleyicisi) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide İkonları -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 antialiased">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // Basit Anahtar Kelime Bazlı Sınıflandırma (Local AI Simülasyonu)
+        const categorizeIdea = (text) => {
+            const lowerText = text.toLowerCase();
+            
+            const rules = [
+                { category: "Yazılım & Teknoloji", keywords: ["kod", "app","tech", "site", "web", "react", "python", "github", "api", "ai", "yapay zeka", "bot", "yazılım","youtube","video"] },
+                { category: "Alışveriş & İhtiyaç", keywords: ["al", "market", "sipariş", "fiyat", "indirim", "ayakkabı", "telefon", "bilgisayar"] },
+                { category: "İş & Kariyer", keywords: ["toplantı", "mail", "sunum", "proje", "ofis", "linkedin", "cv", "başvuru", "mülakat"] },
+                { category: "Sağlık & Spor", keywords: ["koşu", "gym", "diyet", "su", "doktor", "ilaç", "randevu", "yoga", "yürüyüş"] },
+                { category: "Eğlence & Hobi", keywords: ["film", "izle", "oyun", "kitap", "dizi", "netflix", "spotify", "konser", "gezi"] },
+                { category: "Finans", keywords: ["banka", "kredi", "borç", "yatırım", "dolar", "altın", "bitcoin", "fatura", "öde"] }
+            ];
+
+            for (let rule of rules) {
+                if (rule.keywords.some(keyword => lowerText.includes(keyword))) {
+                    return rule.category;
+                }
+            }
+            return "Genel / Diğer";
+        };
+
+        const Icon = ({ name, size = 20, className }) => {
+            useEffect(() => {
+                lucide.createIcons();
+            }, [name]);
+            return <i data-lucide={name} width={size} height={size} className={className}></i>;
+        };
+
+        const App = () => {
+            const [ideas, setIdeas] = useState([]);
+            const [inputValue, setInputValue] = useState("");
+            const [filter, setFilter] = useState("Tümü");
+            const [notification, setNotification] = useState(null);
+
+            // Verileri LocalStorage'dan Çek
+            useEffect(() => {
+                const savedIdeas = localStorage.getItem("myIdeas");
+                if (savedIdeas) {
+                    setIdeas(JSON.parse(savedIdeas));
+                } else {
+                    // Örnek veri
+                    setIdeas([
+                        { id: 1, text: "React ile yeni bir portfolyo sitesi yap", category: "Yazılım & Teknoloji", date: new Date().toISOString() },
+                        { id: 2, text: "Marketten süt ve yumurta al", category: "Alışveriş & İhtiyaç", date: new Date().toISOString() }
+                    ]);
+                }
+            }, []);
+
+            // Verileri LocalStorage'a Kaydet
+            useEffect(() => {
+                localStorage.setItem("myIdeas", JSON.stringify(ideas));
+            }, [ideas]);
+
+            // İkonları güncelle
+            useEffect(() => {
+                lucide.createIcons();
+            }, [ideas, filter]);
+
+            const handleAddIdea = (e) => {
+                e.preventDefault();
+                if (!inputValue.trim()) return;
+
+                const category = categorizeIdea(inputValue);
+                
+                const newIdea = {
+                    id: Date.now(),
+                    text: inputValue,
+                    category: category,
+                    date: new Date().toISOString()
+                };
+
+                setIdeas([newIdea, ...ideas]);
+                setInputValue("");
+                showNotification(`Fikir eklendi ve "${category}" olarak kategorilendi!`);
+            };
+
+            const handleDelete = (id) => {
+                setIdeas(ideas.filter(idea => idea.id !== id));
+            };
+
+            const showNotification = (msg) => {
+                setNotification(msg);
+                setTimeout(() => setNotification(null), 3000);
+            };
+
+            const uniqueCategories = useMemo(() => {
+                const cats = new Set(ideas.map(i => i.category));
+                return ["Tümü", ...Array.from(cats)];
+            }, [ideas]);
+
+            const filteredIdeas = filter === "Tümü" 
+                ? ideas 
+                : ideas.filter(i => i.category === filter);
+
+            const getCategoryColor = (cat) => {
+                switch(cat) {
+                    case "Yazılım & Teknoloji": return "bg-blue-100 text-blue-800 border-blue-200";
+                    case "Alışveriş & İhtiyaç": return "bg-green-100 text-green-800 border-green-200";
+                    case "İş & Kariyer": return "bg-purple-100 text-purple-800 border-purple-200";
+                    case "Sağlık & Spor": return "bg-red-100 text-red-800 border-red-200";
+                    case "Eğlence & Hobi": return "bg-yellow-100 text-yellow-800 border-yellow-200";
+                    default: return "bg-gray-100 text-gray-800 border-gray-200";
+                }
+            };
+
+            return (
+                <div className="min-h-screen pb-12">
+                    {/* Header */}
+                    <header className="bg-white border-b sticky top-0 z-10 shadow-sm">
+                        <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+                            <div className="flex items-center gap-2">
+                                <div className="bg-indigo-600 p-2 rounded-lg text-white">
+                                    <i data-lucide="lightbulb" className="w-6 h-6"></i>
+                                </div>
+                                <h1 className="text-xl font-bold text-gray-900 tracking-tight">Fikir Kutusu</h1>
+                            </div>
+                            <div className="text-sm text-gray-500 hidden sm:block">
+                                Otomatik Kategorilendirme Sistemi
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="max-w-4xl mx-auto px-4 mt-8">
+                        
+                        {/* Input Area */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8 transform hover:scale-[1.01] transition-transform duration-200">
+                            <h2 className="text-lg font-semibold mb-4 text-gray-700">Aklına ne geldi?</h2>
+                            <form onSubmit={handleAddIdea} className="relative">
+                                <input
+                                    type="text"
+                                    value={inputValue}
+                                    onChange={(e) => setInputValue(e.target.value)}
+                                    placeholder="Örn: 'Yarın React çalış' veya 'Akşam 8'de film izle'..."
+                                    className="w-full p-4 pr-12 rounded-xl border-2 border-gray-100 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:outline-none transition-all text-lg"
+                                />
+                                <button 
+                                    type="submit"
+                                    className="absolute right-2 top-2 bottom-2 bg-indigo-600 text-white px-6 rounded-lg hover:bg-indigo-700 font-medium transition-colors flex items-center justify-center"
+                                >
+                                    <span className="hidden sm:inline">Ekle</span>
+                                    <i data-lucide="plus" className="sm:ml-2 w-5 h-5"></i>
+                                </button>
+                            </form>
+                            <div className="mt-3 text-xs text-gray-400 flex items-center gap-1">
+                                <i data-lucide="sparkles" className="w-3 h-3"></i>
+                                <span>Yapay zeka anahtar kelimeleri analiz ederek kategoriyi otomatik seçecektir.</span>
+                            </div>
+                        </div>
+
+                        {/* Filters */}
+                        <div className="flex gap-2 overflow-x-auto pb-4 mb-4 scrollbar-hide">
+                            {uniqueCategories.map(cat => (
+                                <button
+                                    key={cat}
+                                    onClick={() => setFilter(cat)}
+                                    className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                                        filter === cat 
+                                        ? "bg-indigo-600 text-white shadow-md" 
+                                        : "bg-white text-gray-600 border hover:bg-gray-50"
+                                    }`}
+                                >
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Idea List */}
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            {filteredIdeas.length > 0 ? (
+                                filteredIdeas.map((idea) => (
+                                    <div key={idea.id} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow fade-in group relative">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className={`text-xs px-2 py-1 rounded-md border font-medium ${getCategoryColor(idea.category)}`}>
+                                                {idea.category}
+                                            </span>
+                                            <button 
+                                                onClick={() => handleDelete(idea.id)}
+                                                className="text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                title="Sil"
+                                            >
+                                                <i data-lucide="trash-2" className="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                        <p className="text-gray-800 text-lg font-medium leading-relaxed">{idea.text}</p>
+                                        <div className="mt-4 text-xs text-gray-400 flex items-center gap-1">
+                                            <i data-lucide="clock" className="w-3 h-3"></i>
+                                            {new Date(idea.date).toLocaleDateString('tr-TR')} {new Date(idea.date).toLocaleTimeString('tr-TR', {hour: '2-digit', minute:'2-digit'})}
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="col-span-2 text-center py-12 text-gray-400">
+                                    <div className="flex justify-center mb-4">
+                                        <i data-lucide="inbox" className="w-12 h-12 opacity-50"></i>
+                                    </div>
+                                    <p>Bu kategoride henüz bir fikrin yok.</p>
+                                </div>
+                            )}
+                        </div>
+                    </main>
+                    
+                    {/* Notification Toast */}
+                    {notification && (
+                        <div className="fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-3 rounded-lg shadow-xl flex items-center gap-3 fade-in z-50">
+                            <i data-lucide="check-circle" className="w-5 h-5 text-green-400"></i>
+                            {notification}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
