@@ -6,80 +6,81 @@
     <title>Akıllı Görev Kartları</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
+    <!-- Lucide İkon Seti -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Google API Scripts -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://apis.google.com/js/api.js"></script>
-    
+    <!-- Yazı Tipi -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
         .loader { border-top-color: #4F46E5; -webkit-animation: spinner 1.5s linear infinite; animation: spinner 1.5s linear infinite; }
         @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Modal Tabs */
+        .tab-btn.active { border-bottom: 2px solid #4F46E5; color: #4F46E5; }
+        .tab-btn { color: #64748B; border-bottom: 2px solid transparent; }
     </style>
 </head>
-<body class="bg-[#F8FAFC] text-slate-800 min-h-screen pb-12 selection:bg-indigo-100 selection:text-indigo-700">
+<body class="bg-[#F8FAFC] text-slate-800 min-h-screen pb-12">
 
-    <!-- APP CONTENT (Doğrudan Görünür) -->
+    <!-- ================= UYGULAMA İÇERİĞİ (HERKESE AÇIK) ================= -->
     <div id="app-content">
-        <!-- Arka Plan -->
+        
+        <!-- Header Dekorasyonu -->
         <div class="fixed inset-0 pointer-events-none z-0">
             <div class="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-indigo-50/50 to-transparent opacity-60"></div>
-            <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
-            <div class="absolute top-[20%] left-[-10%] w-72 h-72 bg-blue-200/20 rounded-full blur-3xl"></div>
         </div>
 
         <div class="max-w-6xl mx-auto px-4 py-8 relative z-10">
             
-            <!-- HEADER -->
+            <!-- HEADER & NAV -->
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-6">
                 <div>
                     <div class="flex items-center gap-3 mb-2">
-                        <div id="app-mode-icon" class="p-2 bg-slate-600 rounded-lg shadow-lg shadow-slate-200 transition-colors duration-300">
+                        <div id="mode-icon" class="p-2 bg-slate-600 rounded-lg shadow-lg shadow-slate-200 transition-colors duration-300">
                             <i data-lucide="hard-drive" class="text-white w-5 h-5"></i>
                         </div>
-                        <span id="app-mode-badge" class="text-xs font-bold tracking-wider text-slate-600 uppercase bg-slate-50 px-2 py-1 rounded-full border border-slate-100 transition-all duration-300">
-                            Misafir Modu
+                        <span id="mode-badge" class="text-xs font-bold tracking-wider text-slate-600 uppercase bg-slate-50 px-2 py-1 rounded-full border border-slate-100 transition-all duration-300">
+                            Misafir Modu (Yerel)
                         </span>
                     </div>
-                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Akıllı Görev Kartları</h1>
+                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Akıllı Görevler</h1>
                 </div>
                 
-                <!-- Sağ Üst Alan: İstatistikler ve Login -->
-                <div class="flex flex-wrap gap-4 items-center justify-end">
-                    
-                    <!-- İstatistikler -->
-                    <div class="flex gap-3" id="stats-container">
-                        <!-- Stats via JS -->
-                    </div>
+                <!-- Sağ Üst: Auth Butonları -->
+                <div class="flex items-center gap-4">
+                    <!-- İstatistikler (Sadece masaüstü) -->
+                    <div class="hidden md:flex gap-3" id="stats-container"></div>
+                    <div class="hidden md:block h-8 w-px bg-slate-200"></div>
 
-                    <div class="h-8 w-px bg-slate-200 mx-2 hidden sm:block"></div>
-
-                    <!-- Auth Section (Dynamic) -->
-                    <div id="auth-section" class="flex items-center">
-                        <!-- Burası JS ile doldurulacak: Ya Login Butonu Ya Profil -->
+                    <!-- Auth Alanı -->
+                    <div id="auth-section">
+                        <!-- Burası JS ile dolacak (Giriş Yap butonu veya Profil) -->
                     </div>
                 </div>
             </div>
 
-            <!-- INPUT SECTION -->
-            <div class="group relative bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 overflow-hidden transition-all duration-300 focus-within:shadow-xl focus-within:border-indigo-100 mb-10">
+            <!-- GÖREV EKLEME ALANI -->
+            <div class="group relative bg-white rounded-2xl shadow-lg shadow-slate-200/60 border border-slate-100 overflow-hidden mb-10 transition-all focus-within:shadow-xl focus-within:border-indigo-100">
                 <form id="add-idea-form" class="relative z-10">
                     <div class="p-1">
-                        <textarea id="input-text" placeholder="Aklınızdakileri buraya yazın..." class="w-full h-24 p-5 text-base text-slate-700 placeholder:text-slate-300 bg-transparent outline-none resize-none"></textarea>
+                        <textarea id="input-text" placeholder="Yeni bir görev veya fikir yaz..." class="w-full h-24 p-5 text-base text-slate-700 placeholder:text-slate-300 bg-transparent outline-none resize-none"></textarea>
                     </div>
                     <div class="bg-slate-50/50 backdrop-blur-sm border-t border-slate-100 px-4 py-2 flex items-center justify-between gap-3">
-                        <div class="relative flex items-center">
-                            <i data-lucide="calendar" class="absolute left-3 text-indigo-500 w-4 h-4 pointer-events-none"></i>
-                            <input type="datetime-local" id="input-date" class="pl-9 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 focus:outline-none focus:border-indigo-400 shadow-sm cursor-pointer"/>
+                        <div class="relative flex items-center gap-2">
+                            <i data-lucide="calendar" class="text-indigo-500 w-4 h-4"></i>
+                            <input type="datetime-local" id="input-date" class="bg-transparent text-xs text-slate-600 focus:outline-none cursor-pointer"/>
+                            
+                            <!-- Kategori Seçimi (Opsiyonel Manuel) -->
+                            <select id="input-category" class="text-xs bg-white border border-slate-200 rounded px-2 py-1 outline-none">
+                                <option value="auto">Otomatik Kategori</option>
+                                <option value="İş & Kariyer">İş</option>
+                                <option value="Kişisel">Kişisel</option>
+                                <option value="Alışveriş">Alışveriş</option>
+                            </select>
                         </div>
-                        <button type="submit" id="btn-add" class="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-md disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed" disabled>
+                        <button type="submit" id="btn-add" class="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all bg-indigo-600 text-white hover:bg-indigo-700 shadow-md disabled:opacity-50 disabled:cursor-not-allowed" disabled>
                             <span>Ekle</span>
                             <i data-lucide="plus" class="w-4 h-4"></i>
                         </button>
@@ -87,173 +88,205 @@
                 </form>
             </div>
 
-            <!-- FILTERS -->
+            <!-- FİLTRELER -->
             <div class="mb-6 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide" id="filters-container"></div>
 
-            <!-- GRID LAYOUT -->
+            <!-- GÖREV LİSTESİ (GRID) -->
             <div id="ideas-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 <div id="loading-spinner" class="col-span-full py-16 text-center hidden">
-                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-12 w-12 mb-4 mx-auto"></div>
-                    <p class="text-slate-500">Veriler yükleniyor...</p>
+                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-10 w-10 mb-3 mx-auto"></div>
+                    <p class="text-slate-400">Veriler yükleniyor...</p>
                 </div>
+                <!-- Kartlar buraya gelecek -->
             </div>
 
         </div>
     </div>
 
-    <!-- MODAL (Aynı Yapı) -->
-    <div id="modal-overlay" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm transition-opacity">
-        <div id="modal-content" class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative flex flex-col transform transition-all scale-95 opacity-0"></div>
+    <!-- ================= AUTH MODAL (Giriş/Kayıt Penceresi) ================= -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden relative">
+            
+            <!-- Modal Kapat Butonu -->
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <!-- Tabs -->
+            <div class="flex border-b border-slate-100">
+                <button onclick="switchTab('login')" id="tab-login" class="flex-1 py-4 text-sm font-bold text-center tab-btn active transition-colors">Giriş Yap</button>
+                <button onclick="switchTab('register')" id="tab-register" class="flex-1 py-4 text-sm font-bold text-center tab-btn transition-colors">Kayıt Ol</button>
+            </div>
+
+            <div class="p-8">
+                <!-- Login Form -->
+                <div id="form-login" class="space-y-4">
+                    <h2 class="text-xl font-bold text-slate-800">Tekrar Hoş Geldiniz</h2>
+                    <p class="text-xs text-slate-500 mb-4">Görevlerinize her yerden erişmek için giriş yapın.</p>
+                    <form onsubmit="handleLogin(event)" class="space-y-3">
+                        <input type="email" id="login-email" placeholder="E-posta" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <input type="password" id="login-pass" placeholder="Şifre" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <div class="flex justify-end">
+                            <button type="button" onclick="switchTab('forgot')" class="text-xs text-indigo-600 hover:underline">Şifremi Unuttum?</button>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">Giriş Yap</button>
+                    </form>
+                </div>
+
+                <!-- Register Form -->
+                <div id="form-register" class="hidden space-y-4">
+                    <h2 class="text-xl font-bold text-slate-800">Hesap Oluştur</h2>
+                    <p class="text-xs text-slate-500 mb-4">Verilerinizi bulutta güvenle saklayın. Şifreniz veritabanında şifreli olarak tutulur.</p>
+                    <form onsubmit="handleRegister(event)" class="space-y-3">
+                        <input type="text" id="reg-name" placeholder="Ad Soyad" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <input type="email" id="reg-email" placeholder="E-posta" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <input type="password" id="reg-pass" placeholder="Şifre" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <input type="password" id="reg-pass-confirm" placeholder="Şifre (Tekrar)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">Kayıt Ol</button>
+                    </form>
+                </div>
+
+                <!-- Forgot Password Form -->
+                <div id="form-forgot" class="hidden space-y-4">
+                    <div class="flex items-center mb-2">
+                        <button onclick="switchTab('login')" class="text-slate-400 hover:text-slate-600 mr-2"><i data-lucide="arrow-left" class="w-5 h-5"></i></button>
+                        <h2 class="text-xl font-bold text-slate-800">Şifre Sıfırlama</h2>
+                    </div>
+                    <p class="text-xs text-slate-500 mb-4">Kayıt olurken size verilen Kurtarma Anahtarını kullanarak şifrenizi sıfırlayabilirsiniz.</p>
+                    <form onsubmit="handleForgot(event)" class="space-y-3">
+                        <input type="email" id="forgot-email" placeholder="E-posta" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <input type="text" id="forgot-key" placeholder="Kurtarma Anahtarı (Recovery Key)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-sm" required>
+                        <input type="password" id="forgot-new-pass" placeholder="Yeni Şifre" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500" required>
+                        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">Şifreyi Güncelle</button>
+                    </form>
+                </div>
+
+                <!-- Auth Loading -->
+                <div id="auth-loading" class="hidden absolute inset-0 bg-white/90 flex flex-col items-center justify-center">
+                    <div class="loader ease-linear rounded-full border-4 border-t-4 border-indigo-500 h-8 w-8 mb-2"></div>
+                    <p class="text-xs text-indigo-600 font-bold">İşlem yapılıyor...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RECOVERY KEY MODAL (Kayıt Sonrası) -->
+    <div id="recovery-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm fade-in">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="key" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-800 mb-2">Kayıt Başarılı!</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                Lütfen aşağıdaki **Kurtarma Anahtarını** güvenli bir yere kaydedin. Şifrenizi unutursanız bu anahtara ihtiyacınız olacak.
+            </p>
+            <div class="bg-slate-100 p-4 rounded-xl border border-slate-200 mb-6 relative group">
+                <code id="display-recovery-key" class="font-mono text-lg font-bold text-slate-700 tracking-wide select-all"></code>
+                <button onclick="copyRecoveryKey()" class="absolute top-2 right-2 text-slate-400 hover:text-indigo-600">
+                    <i data-lucide="copy" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <button onclick="closeRecoveryModal()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl transition-all">
+                Anladım, Anahtarı Kaydettim
+            </button>
+        </div>
     </div>
 
     <script>
-        // ==========================================
-        // AYARLAR
-        // ==========================================
-        const CLIENT_ID = 'YOUR_CLIENT_ID_HERE.apps.googleusercontent.com'; 
-        const API_KEY = 'YOUR_API_KEY_HERE';
-        const DISCOVERY_DOCS = ["https://sheets.googleapis.com/$discovery/rest?version=v4", "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest"];
-        const SCOPES = "https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file";
-        const SHEET_NAME = "SmartTasksDB";
+        // ================= AYARLAR =================
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjw0ubA9u0zZTx7e93-YA-m8GUU_0imDbaM8cCWH7XuF9uxPETR2gYgCHLh_E14eGU/exec";
         const LOCAL_STORAGE_KEY = 'smart_tasks_local';
+        const ALL_CATEGORIES = ['Finans & Bütçe', 'Ev & Aile', 'Teknoloji', 'İş & Kariyer', 'Eğitim', 'Sağlık & Yaşam', 'Seyahat', 'Sosyal', 'Genel Notlar'];
 
-        let tokenClient;
-        let gapiInited = false;
-        let gisInited = false;
-        let spreadsheetId = null;
-        let ideas = []; 
-        let isGuestMode = true; // Varsayılan: Misafir Modu
+        // Durum Yönetimi
+        let isGuestMode = true;
+        let currentUser = null;
+        let ideas = [];
+        let activeFilter = 'Tümü';
 
-        // ==========================================
-        // BAŞLATMA MANTIĞI
-        // ==========================================
+        // ================= GÜVENLİK FONKSİYONLARI (HASHING) =================
+        
+        // Şifreyi SHA-256 ile hashleyen fonksiyon
+        async function hashPassword(password) {
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+
+        // Rastgele Recovery Key Üretici
+        function generateRecoveryKey() {
+            return 'REC-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        }
+
+        // ================= YARDIMCI FONKSİYONLAR (API CALL) =================
+        async function apiCall(payload) {
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify(payload)
+                });
+                return await response.json();
+            } catch (error) {
+                console.error("API Call Error:", error);
+                throw error;
+            }
+        }
+
+        // ================= BAŞLATMA =================
         window.onload = function() {
-            gapiLoaded();
-            gisLoaded();
-            
-            // Site açılır açılmaz LocalStorage verilerini yükle ve arayüzü oluştur
-            renderAuthSection(); // Giriş butonunu koy
-            loadData(); // Verileri çek
-        }
-
-        // ==========================================
-        // GİRİŞ FONKSİYONLARI
-        // ==========================================
-
-        function renderAuthSection() {
-            const authSection = document.getElementById('auth-section');
-            
-            if (isGuestMode) {
-                // Misafir Modu: Google Login Butonu Göster
-                authSection.innerHTML = `
-                    <button onclick="handleAuthClick()" class="flex items-center gap-2 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-sm group">
-                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
-                             <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
-                             <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"></path>
-                             <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
-                        </svg>
-                        <span>Giriş Yap / Üye Ol</span>
-                    </button>
-                `;
-            } else {
-                // Cloud Modu: Profil ve Çıkış Butonu
-                authSection.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 rounded-lg border border-indigo-100">
-                            <img src="https://ui-avatars.com/api/?name=User&background=4f46e5&color=ffffff" alt="Profile" class="w-6 h-6 rounded-full">
-                            <span class="text-xs font-semibold text-indigo-700">Bağlandı</span>
-                        </div>
-                        <button onclick="handleSignoutClick()" class="bg-white border border-slate-200 text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 p-2 rounded-xl transition-all shadow-sm" title="Çıkış Yap">
-                            <i data-lucide="log-out" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                `;
-                lucide.createIcons();
-            }
-        }
-
-        async function handleAuthClick() {
-            // Butona basılınca yükleniyor işareti
-            const btn = document.querySelector('#auth-section button');
-            if(btn) btn.innerHTML = `<div class="animate-spin h-4 w-4 border-2 border-slate-400 border-t-transparent rounded-full"></div>`;
-
-            tokenClient.callback = async (resp) => {
-                if (resp.error) {
-                    renderAuthSection(); // Hata varsa butonu geri getir
-                    throw (resp);
-                }
-                
-                // Başarılı giriş
-                isGuestMode = false;
-                await findOrCreateSpreadsheet(); // Cloud DB bul/yarat
-                updateAppHeader('cloud');
-                renderAuthSection(); // Profili göster
-            };
-
-            if (gapi.client.getToken() === null) {
-                tokenClient.requestAccessToken({prompt: 'consent'});
-            } else {
-                tokenClient.requestAccessToken({prompt: ''});
-            }
-        }
-
-        function handleSignoutClick() {
-            const token = gapi.client.getToken();
-            if (token !== null) {
-                google.accounts.oauth2.revoke(token.access_token);
-                gapi.client.setToken('');
-            }
-            // Çıkış yapınca sayfayı yenileyip misafir moduna döndür
-            location.reload(); 
-        }
-
-        function updateAppHeader(mode) {
-            const iconDiv = document.getElementById('app-mode-icon');
-            const badge = document.getElementById('app-mode-badge');
-            
-            if (mode === 'cloud') {
-                iconDiv.innerHTML = `<i data-lucide="cloud" class="text-white w-5 h-5"></i>`;
-                iconDiv.className = "p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-200 transition-colors duration-300";
-                badge.innerText = "Cloud Sync";
-                badge.className = "text-xs font-bold tracking-wider text-indigo-600 uppercase bg-indigo-50 px-2 py-1 rounded-full border border-indigo-100 transition-all duration-300";
-            } else {
-                iconDiv.innerHTML = `<i data-lucide="hard-drive" class="text-white w-5 h-5"></i>`;
-                iconDiv.className = "p-2 bg-slate-600 rounded-lg shadow-lg shadow-slate-200 transition-colors duration-300";
-                badge.innerText = "Misafir Modu";
-                badge.className = "text-xs font-bold tracking-wider text-slate-600 uppercase bg-slate-50 px-2 py-1 rounded-full border border-slate-100 transition-all duration-300";
-            }
+            loadData();
+            renderAuthSection();
             lucide.createIcons();
-        }
+        };
 
-        // ==========================================
-        // VERİ YÖNETİMİ
-        // ==========================================
-
+        // ================= VERİ YÖNETİMİ =================
         async function loadData() {
             document.getElementById('loading-spinner').classList.remove('hidden');
-            
             if (isGuestMode) {
-                // LOCAL STORAGE
                 const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
-                if (localData) {
-                    ideas = JSON.parse(localData);
-                } else {
-                    ideas = [];
-                }
+                ideas = localData ? JSON.parse(localData) : [];
                 finishLoading();
             } else {
-                // GOOGLE SHEETS
-                await loadTasksFromSheet();
+                try {
+                    const res = await fetch(`${SCRIPT_URL}?action=read`);
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        ideas = json.data.filter(t => t.userEmail === currentUser.email);
+                    }
+                } catch (e) {
+                    console.error("Cloud Read Error", e);
+                    alert("Veriler çekilemedi!");
+                }
                 finishLoading();
             }
         }
 
-        async function saveData() {
+        async function saveData(task, action = 'create') {
             if (isGuestMode) {
+                if (action === 'create') ideas.unshift(task);
+                else if (action === 'update') {
+                    const idx = ideas.findIndex(i => i.id === task.id);
+                    if (idx !== -1) ideas[idx] = task;
+                }
+                else if (action === 'delete') ideas = ideas.filter(i => i.id !== task.id);
                 localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ideas));
+                renderIdeas(); renderStats(); renderFilters();
             } else {
-                await syncToCloud();
+                if (action === 'create') ideas.unshift(task);
+                else if (action === 'update') {
+                    const idx = ideas.findIndex(i => i.id === task.id);
+                    if (idx !== -1) ideas[idx] = task;
+                }
+                else if (action === 'delete') ideas = ideas.filter(i => i.id !== task.id);
+                renderIdeas(); 
+                try {
+                    await apiCall({ action: action, task: task, id: task.id });
+                } catch (e) {
+                    alert("Senkronizasyon hatası!");
+                }
             }
         }
 
@@ -264,297 +297,256 @@
             renderIdeas();
         }
 
-        // ==========================================
-        // GOOGLE SHEETS ÖZEL FONKSİYONLARI
-        // ==========================================
-        function gapiLoaded() { gapi.load('client', initializeGapiClient); }
-        async function initializeGapiClient() {
-            await gapi.client.init({ apiKey: API_KEY, discoveryDocs: DISCOVERY_DOCS });
-            gapiInited = true;
-        }
-        function gisLoaded() {
-            tokenClient = google.accounts.oauth2.initTokenClient({
-                client_id: CLIENT_ID, scope: SCOPES, callback: '', 
-            });
-            gisInited = true;
+        // ================= AUTH UI & LOGIC =================
+        function renderAuthSection() {
+            const container = document.getElementById('auth-section');
+            if (isGuestMode) {
+                container.innerHTML = `
+                    <button onclick="openAuthModal()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all transform hover:-translate-y-0.5">
+                        <i data-lucide="log-in" class="w-4 h-4"></i> <span>Giriş Yap / Üye Ol</span>
+                    </button>
+                `;
+                updateHeaderStyle('guest');
+            } else {
+                container.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="text-right hidden sm:block">
+                            <p class="text-sm font-bold text-slate-800">${currentUser.name}</p>
+                            <p class="text-xs text-indigo-500">Cloud Sync Aktif</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border-2 border-white shadow-sm">
+                            ${currentUser.name.charAt(0).toUpperCase()}
+                        </div>
+                        <button onclick="logout()" class="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors" title="Çıkış Yap"><i data-lucide="log-out" class="w-5 h-5"></i></button>
+                    </div>
+                `;
+                updateHeaderStyle('cloud');
+            }
+            lucide.createIcons();
         }
 
-        async function findOrCreateSpreadsheet() {
+        function updateHeaderStyle(mode) {
+            const icon = document.getElementById('mode-icon');
+            const badge = document.getElementById('mode-badge');
+            if (mode === 'cloud') {
+                icon.className = "p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-200 transition-colors";
+                icon.innerHTML = `<i data-lucide="cloud" class="text-white w-5 h-5"></i>`;
+                badge.innerText = "Bulut Modu";
+                badge.className = "text-xs font-bold tracking-wider text-indigo-600 uppercase bg-indigo-50 px-2 py-1 rounded-full border border-indigo-100";
+            } else {
+                icon.className = "p-2 bg-slate-600 rounded-lg shadow-lg shadow-slate-200 transition-colors";
+                icon.innerHTML = `<i data-lucide="hard-drive" class="text-white w-5 h-5"></i>`;
+                badge.innerText = "Misafir Modu";
+                badge.className = "text-xs font-bold tracking-wider text-slate-600 uppercase bg-slate-50 px-2 py-1 rounded-full border border-slate-100";
+            }
+            lucide.createIcons();
+        }
+
+        function openAuthModal() { 
+            document.getElementById('auth-modal').classList.remove('hidden'); 
+            document.getElementById('auth-modal').classList.add('flex');
+        }
+        function closeAuthModal() { 
+            document.getElementById('auth-modal').classList.add('hidden'); 
+            document.getElementById('auth-modal').classList.remove('flex');
+        }
+        function switchTab(tab) {
+            document.getElementById('form-login').classList.toggle('hidden', tab !== 'login');
+            document.getElementById('form-register').classList.toggle('hidden', tab !== 'register');
+            document.getElementById('form-forgot').classList.toggle('hidden', tab !== 'forgot');
+            
+            if(tab !== 'forgot') {
+                document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+                document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+            }
+        }
+
+        // --- LOGIN ---
+        async function handleLogin(e) {
+            e.preventDefault();
+            document.getElementById('auth-loading').classList.remove('hidden');
+            
+            const email = document.getElementById('login-email').value;
+            const rawPass = document.getElementById('login-pass').value;
+            const hashedPassword = await hashPassword(rawPass); // Şifrele
+
             try {
-                const response = await gapi.client.drive.files.list({
-                    q: `name = '${SHEET_NAME}' and mimeType = 'application/vnd.google-apps.spreadsheet' and trashed = false`,
-                    fields: 'files(id, name)',
-                });
-                const files = response.result.files;
-                if (files && files.length > 0) {
-                    spreadsheetId = files[0].id;
-                    await loadData();
+                const res = await apiCall({ action: 'login', email, password: hashedPassword }); // Hashli gönder
+                if (res.status === 'success') {
+                    currentUser = res.user;
+                    currentUser.email = email;
+                    isGuestMode = false;
+                    closeAuthModal();
+                    renderAuthSection();
+                    loadData();
                 } else {
-                    const createResponse = await gapi.client.sheets.spreadsheets.create({ properties: { title: SHEET_NAME } });
-                    spreadsheetId = createResponse.result.spreadsheetId;
-                    await gapi.client.sheets.spreadsheets.values.update({
-                        spreadsheetId: spreadsheetId,
-                        range: "Sheet1!A1",
-                        valueInputOption: "RAW",
-                        resource: { values: [["ID", "Text", "Category", "Tags", "Timestamp", "Deadline"]] }
-                    });
-                    ideas = [];
-                    finishLoading();
+                    alert(res.message);
                 }
             } catch (err) {
-                console.error("DB Error:", err);
-                alert("Veritabanı bağlantı hatası.");
+                alert("Bağlantı hatası.");
             }
+            document.getElementById('auth-loading').classList.add('hidden');
         }
 
-        async function loadTasksFromSheet() {
-            try {
-                const response = await gapi.client.sheets.spreadsheets.values.get({ spreadsheetId: spreadsheetId, range: "Sheet1!A2:F" });
-                const rows = response.result.values;
-                if (!rows || rows.length === 0) ideas = [];
-                else {
-                    ideas = rows.map(row => ({
-                        id: parseInt(row[0]),
-                        text: row[1] || "",
-                        category: row[2] || "Genel",
-                        tags: row[3] ? row[3].split(',') : [],
-                        timestamp: row[4],
-                        deadline: (row[5] === 'null' || !row[5]) ? null : row[5]
-                    })).sort((a, b) => b.id - a.id);
-                }
-            } catch (err) { console.error("Read Error:", err); }
-        }
+        // --- REGISTER ---
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            const pass1 = document.getElementById('reg-pass').value;
+            const pass2 = document.getElementById('reg-pass-confirm').value;
 
-        async function syncToCloud() {
-            const rows = ideas.map(idea => [ idea.id, idea.text, idea.category, idea.tags.join(','), idea.timestamp, idea.deadline || 'null' ]);
-            try {
-                await gapi.client.sheets.spreadsheets.values.clear({ spreadsheetId: spreadsheetId, range: "Sheet1!A2:F" });
-                if (rows.length > 0) {
-                    await gapi.client.sheets.spreadsheets.values.update({
-                        spreadsheetId: spreadsheetId, range: "Sheet1!A2", valueInputOption: "RAW", resource: { values: rows }
-                    });
-                }
-            } catch (err) { console.error("Sync Error:", err); }
-        }
-
-        // ==========================================
-        // APP MANTIĞI (ORTAK)
-        // ==========================================
-        const ALL_CATEGORIES = ['Finans & Bütçe', 'Ev & Aile', 'Teknoloji', 'İş & Kariyer', 'Eğitim', 'Sağlık & Yaşam', 'Seyahat & Etkinlik', 'Sosyal', 'Alışveriş', 'Eğlence & Hobi', 'Genel Notlar'];
-        let activeFilter = 'Tümü';
-        let currentModalIdeaId = null;
-        let isEditing = false;
-        let copiedId = null;
-
-        function getCategoryTheme(categoryName) {
-             switch (categoryName) {
-                case 'Finans & Bütçe': return { icon: 'dollar-sign', color: 'bg-emerald-50 text-emerald-600 border-emerald-200 ring-emerald-500/20' };
-                case 'Ev & Aile': return { icon: 'home', color: 'bg-orange-50 text-orange-600 border-orange-200 ring-orange-500/20' };
-                case 'Teknoloji': return { icon: 'monitor', color: 'bg-slate-50 text-slate-600 border-slate-200 ring-slate-500/20' };
-                case 'İş & Kariyer': return { icon: 'briefcase', color: 'bg-blue-50 text-blue-600 border-blue-200 ring-blue-500/20' };
-                case 'Eğitim': return { icon: 'graduation-cap', color: 'bg-indigo-50 text-indigo-600 border-indigo-200 ring-indigo-500/20' };
-                case 'Sağlık & Yaşam': return { icon: 'heart', color: 'bg-rose-50 text-rose-600 border-rose-200 ring-rose-500/20' };
-                case 'Seyahat & Etkinlik': return { icon: 'plane', color: 'bg-sky-50 text-sky-600 border-sky-200 ring-sky-500/20' };
-                case 'Sosyal': return { icon: 'users', color: 'bg-pink-50 text-pink-600 border-pink-200 ring-pink-500/20' };
-                case 'Alışveriş': return { icon: 'shopping-cart', color: 'bg-amber-50 text-amber-600 border-amber-200 ring-amber-500/20' };
-                case 'Eğlence & Hobi': return { icon: 'zap', color: 'bg-violet-50 text-violet-600 border-violet-200 ring-violet-500/20' };
-                default: return { icon: 'user', color: 'bg-gray-50 text-gray-600 border-gray-200 ring-gray-500/20' };
+            if (pass1 !== pass2) {
+                alert("Şifreler eşleşmiyor!");
+                return;
             }
+
+            document.getElementById('auth-loading').classList.remove('hidden');
+            
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const hashedPassword = await hashPassword(pass1); // Şifrele
+            const recoveryKey = generateRecoveryKey();
+
+            try {
+                const res = await apiCall({ action: 'register', name, email, password: hashedPassword, recoveryKey }); // Key ile gönder
+
+                if (res.status === 'success') {
+                    // Başarılı olursa Recovery Modal'ı göster
+                    closeAuthModal();
+                    document.getElementById('display-recovery-key').textContent = recoveryKey;
+                    document.getElementById('recovery-modal').classList.remove('hidden');
+                    document.getElementById('recovery-modal').classList.add('flex');
+                } else {
+                    alert(res.message);
+                }
+            } catch (err) {
+                alert("Kayıt hatası.");
+            }
+            document.getElementById('auth-loading').classList.add('hidden');
         }
+
+        // --- FORGOT PASSWORD ---
+        async function handleForgot(e) {
+            e.preventDefault();
+            document.getElementById('auth-loading').classList.remove('hidden');
+            
+            const email = document.getElementById('forgot-email').value;
+            const key = document.getElementById('forgot-key').value;
+            const newRawPass = document.getElementById('forgot-new-pass').value;
+            const newHashedPass = await hashPassword(newRawPass);
+
+            try {
+                const res = await apiCall({ action: 'reset_password', email, recoveryKey: key, newPassword: newHashedPass });
+                if (res.status === 'success') {
+                    alert("Şifreniz başarıyla güncellendi! Giriş yapabilirsiniz.");
+                    switchTab('login');
+                } else {
+                    alert(res.message);
+                }
+            } catch (err) {
+                alert("Hata oluştu.");
+            }
+            document.getElementById('auth-loading').classList.add('hidden');
+        }
+
+        function closeRecoveryModal() {
+            document.getElementById('recovery-modal').classList.add('hidden');
+            document.getElementById('recovery-modal').classList.remove('flex');
+            switchTab('login');
+            openAuthModal();
+        }
+
+        function copyRecoveryKey() {
+            const key = document.getElementById('display-recovery-key').innerText;
+            navigator.clipboard.writeText(key);
+            alert("Kopyalandı!");
+        }
+
+        function logout() {
+            currentUser = null;
+            isGuestMode = true;
+            ideas = [];
+            loadData();
+            renderAuthSection();
+        }
+
+        // ================= GÖREV MANTIĞI & UI =================
         function categorizeIdea(text) {
-             const lowerText = text.toLowerCase();
-            let category = 'Genel Notlar';
-            if (lowerText.match(/(para|banka|kredi|borç|ödeme|fatura|hisse|borsa|yatırım|dolar|euro|altın|coin|kripto|cüzdan|maaş|zam|prim|vergi|sigorta|emeklilik|eft|havale|iban|fiş|taksit)/)) category = 'Finans & Bütçe';
-            else if (lowerText.match(/(ev|kira|aidat|apartman|komşu|tamir|musluk|boya|dekorasyon|mobilya|mutfak|banyo|salon|yatak|temizlik|ütü|çamaşır|bulaşık|bahçe|çiçek|kedi|köpek|mama|veteriner|çocuk|bebek|bakıcı|anne|baba|kardeş)/)) category = 'Ev & Aile';
-            else if (lowerText.match(/(kod|yazılım|react|javascript|python|css|html|api|database|sunucu|server|domain|hosting|app|uygulama|ios|android|web|site|bug|hata|update|güncelleme|bilgisayar|laptop|mouse|klavye|ekran|şarj|wifi|internet|modem)/)) category = 'Teknoloji';
-            else if (lowerText.match(/(toplantı|mail|e-posta|outlook|teams|zoom|slack|proje|rapor|sunum|müşteri|patron|müdür|ik|insan kaynakları|cv|özgeçmiş|mülakat|linkedin|ofis|şirket|kurumsal|staj|mesai|izin|görev|task|deadline|teslim)/)) category = 'İş & Kariyer';
-            else if (lowerText.match(/(ders|sınav|vize|final|ödev|tez|okul|üniversite|lise|kurs|sertifika|eğitim|udemy|coursera|kitap oku|makale|araştırma|öğren|dil|ingilizce|almanca|ispanyolca|sözlük|kütüphane)/)) category = 'Eğitim';
-            else if (lowerText.match(/(doktor|hastane|randevu|ilaç|eczane|ağrı|tedavi|ameliyat|dişçi|gözlük|lens|tahlil|spor|gym|fitness|yoga|pilates|koşu|yürüyüş|diyet|kalori|protein|vitamin|su iç|uyku|meditasyon)/)) category = 'Sağlık & Yaşam';
-            else if (lowerText.match(/(tatil|gezi|uçak|bilet|otel|rezervasyon|vize|pasaport|valiz|kamp|çadır|tur|yolculuk|harita|konum|trafik|araba|benzin|otobüs|tren|metro|konser|sinema|tiyatro|biletix|etkinlik|festival|müze|sergi)/)) category = 'Seyahat & Etkinlik';
-            else if (lowerText.match(/(buluşma|kahve|yemek ye|restoran|cafe|kafe|doğum günü|hediye|parti|kutlama|düğün|nişan|cenaze|ziyaret|arkadaş|dost|sevgili|manita|arama|mesaj|whatsapp|instagram|twitter)/)) category = 'Sosyal';
-            else if (lowerText.match(/(alınacak|sipariş|kargo|sepet|indirim|kampanya|mağaza|avm|pazar|market|liste)/)) category = 'Alışveriş';
-            else if (lowerText.match(/(film|dizi|netflix|oyun|game|playstation|steam|müzik|şarkı|gitar|piyano|resim|fotoğraf|kamera|video|youtube|twitch)/)) category = 'Eğlence & Hobi';
-            return category;
-        }
-        function suggestTags(text) {
-             const tags = [];
-            const lowerText = text.toLowerCase();
-            if (lowerText.match(/(yarın|bugün|akşam|sabah|öğle|haftaya|pazartesi|salı|çarşamba|perşembe|cuma|cumartesi|pazar|ocak|şubat|mart)/)) tags.push('Zamanlı');
-            if (lowerText.match(/(acil|önemli|kritik|hemen|şimdi|unutma|dikkat)/)) tags.push('Yüksek Öncelik');
-            if (lowerText.match(/(al|satın|sipariş|öde|gönder|yolla|ara|konuş|yaz|git|yap|bitir|hazırla)/)) tags.push('Eylem Gerektirir');
-            if (lowerText.match(/(fikir|düşünce|belki|acaba|araştır|bak|incele)/)) tags.push('Fikir');
-            if (lowerText.match(/(iptal|iade|değişim|sorun|problem)/)) tags.push('Sorun Çözme');
-            if (tags.length === 0) tags.push('Hızlı Not');
-            return tags;
-        }
-        function calculateTimeLeft(targetDate) {
-             const difference = +new Date(targetDate) - +new Date();
-            if (difference > 0) {
-                return {
-                    days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-                    hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
-                    minutes: Math.floor((difference / 1000 / 60) % 60),
-                    seconds: Math.floor((difference / 1000) % 60),
-                    isExpired: false
-                };
-            }
-            return { isExpired: true };
+            const t = text.toLowerCase();
+            if(t.match(/fiyat|tl|para|bütçe|alınacak/)) return 'Alışveriş';
+            if(t.match(/toplantı|mail|proje|rapor/)) return 'İş & Kariyer';
+            if(t.match(/doktor|randevu|spor|diyet/)) return 'Sağlık & Yaşam';
+            return 'Genel Notlar';
         }
 
-        // Render Functions
-        function renderStats() {
-            const total = ideas.length;
-            const urgent = ideas.filter(i => i.tags.includes('Yüksek Öncelik')).length;
-            document.getElementById('stats-container').innerHTML = `
-                <div class="bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center">
-                    <span class="text-xl font-bold text-slate-800">${total}</span>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">Toplam</span>
-                </div>
-                <div class="bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm flex flex-col items-center">
-                    <span class="text-xl font-bold text-rose-500">${urgent}</span>
-                    <span class="text-[10px] font-bold text-slate-400 uppercase">Acil</span>
-                </div>
-            `;
-        }
-        function renderFilters() {
-            const uniqueCategories = ['Tümü', ...new Set(ideas.map(idea => idea.category))];
-            document.getElementById('filters-container').innerHTML = `<i data-lucide="filter" class="text-slate-400 flex-shrink-0 mr-1 w-3.5 h-3.5"></i>` + 
-                uniqueCategories.map(cat => `<button onclick="setFilter('${cat}')" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all border ${activeFilter === cat ? 'bg-slate-800 text-white border-slate-800 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}">${cat}</button>`).join('');
-            lucide.createIcons();
-        }
+        document.getElementById('add-idea-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const text = document.getElementById('input-text').value;
+            if (!text.trim()) return;
+            const dateInput = document.getElementById('input-date').value;
+            const manualCat = document.getElementById('input-category').value;
+            const category = manualCat !== 'auto' ? manualCat : categorizeIdea(text);
+            const newTask = {
+                id: Date.now(), text: text, category: category, tags: ["Yeni"],
+                timestamp: new Date().toISOString(), deadline: dateInput || null,
+                userEmail: currentUser ? currentUser.email : 'guest'
+            };
+            saveData(newTask, 'create');
+            document.getElementById('input-text').value = '';
+            document.getElementById('btn-add').disabled = true;
+        });
+
+        document.getElementById('input-text').addEventListener('input', (e) => {
+            document.getElementById('btn-add').disabled = !e.target.value.trim();
+        });
+
         function renderIdeas() {
             const container = document.getElementById('ideas-grid');
-            const filteredIdeas = activeFilter === 'Tümü' ? ideas : ideas.filter(idea => idea.category === activeFilter);
-            
-            // Loading spinner'ı koru, diğer kartları sil
-            const spinner = document.getElementById('loading-spinner');
-            container.innerHTML = ''; 
-            container.appendChild(spinner);
+            const spinner = container.querySelector('#loading-spinner');
+            container.innerHTML = '';
+            if(spinner) container.appendChild(spinner);
+            const filtered = activeFilter === 'Tümü' ? ideas : ideas.filter(i => i.category === activeFilter);
 
-            if (filteredIdeas.length === 0) {
-                const emptyDiv = document.createElement('div');
-                emptyDiv.className = "col-span-full py-16 text-center border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50";
-                emptyDiv.innerHTML = `<i data-lucide="layout-dashboard" class="mx-auto text-slate-300 mb-3 w-10 h-10 block"></i><p class="text-slate-500 font-medium">Bu görünümde kart yok.</p><button onclick="setFilter('Tümü')" class="mt-2 text-indigo-600 text-sm font-semibold hover:underline">Tümünü Göster</button>`;
-                container.appendChild(emptyDiv);
+            if (filtered.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = "col-span-full py-12 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50";
+                empty.innerHTML = `<i data-lucide="clipboard-list" class="w-12 h-12 text-slate-300 mx-auto mb-2"></i><p class="text-slate-400">Henüz görev yok.</p>`;
+                container.appendChild(empty);
             } else {
-                filteredIdeas.forEach(idea => {
-                    const theme = getCategoryTheme(idea.category);
-                    const tagHtml = idea.tags.slice(0, 2).map(tag => `<span class="inline-flex items-center text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded border border-slate-200/50">${tag}</span>`).join('');
-                    const extraTags = idea.tags.length > 2 ? `<span class="text-[10px] text-slate-400 px-1 py-0.5">+${idea.tags.length - 2}</span>` : '';
-                    const countdownHtml = idea.deadline ? `<div class="countdown-minimal inline-flex items-center gap-1 font-mono text-[10px] font-medium px-1.5 py-0.5 rounded border" data-deadline="${idea.deadline}"><i data-lucide="clock" class="w-2.5 h-2.5"></i><span class="time-text">...</span></div>` : '';
-                    
-                    const div = document.createElement('div');
-                    div.className = "group relative bg-white flex flex-col h-[200px] rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-900/5 transition-all duration-300 hover:-translate-y-1 cursor-pointer overflow-hidden animate-fade-in";
-                    div.onclick = () => openModal(idea.id);
-                    div.innerHTML = `<div class="px-5 pt-5 pb-2 flex items-start justify-between"><div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider ${theme.color.split(' ')[1]}"><span class="p-1.5 rounded-md ${theme.color}"><i data-lucide="${theme.icon}" class="w-3.5 h-3.5"></i></span><span class="truncate max-w-[100px]">${idea.category}</span></div>${countdownHtml}</div><div class="px-5 flex-1 overflow-hidden"><p class="text-slate-700 text-sm leading-relaxed font-medium line-clamp-3">${idea.text}</p></div><div class="px-5 pb-5 pt-2 mt-auto flex items-center justify-between border-t border-slate-50 bg-slate-50/30"><div class="flex gap-1 overflow-hidden">${tagHtml}${extraTags}</div><div class="text-slate-300 group-hover:text-indigo-500 transition-colors"><i data-lucide="maximize-2" class="w-3.5 h-3.5"></i></div></div>`;
-                    container.appendChild(div);
+                filtered.forEach(task => {
+                    const el = document.createElement('div');
+                    el.className = "bg-white p-5 rounded-xl border border-slate-100 shadow-sm hover:shadow-lg transition-all group relative cursor-pointer hover:-translate-y-1";
+                    el.onclick = (e) => { if(!e.target.closest('button')) deleteTask(task.id) }; 
+                    const dateDisplay = task.deadline ? `<span class="flex items-center gap-1 text-[10px] text-rose-500 font-bold bg-rose-50 px-2 py-1 rounded"><i data-lucide="clock" class="w-3 h-3"></i> ${new Date(task.deadline).toLocaleDateString('tr-TR')}</span>` : '';
+                    el.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100">${task.category}</span>
+                            ${dateDisplay}
+                        </div>
+                        <p class="text-slate-700 font-medium leading-relaxed mb-4">${task.text}</p>
+                        <div class="flex justify-between items-center pt-3 border-t border-slate-50 mt-auto">
+                            <span class="text-[10px] text-slate-400">${new Date(task.timestamp).toLocaleDateString('tr-TR')}</span>
+                            <button onclick="saveData({id:${task.id}}, 'delete'); event.stopPropagation();" class="text-slate-300 hover:text-rose-500 transition-colors p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                        </div>
+                    `;
+                    container.appendChild(el);
                 });
             }
-            lucide.createIcons();
-            updateCountdowns();
+            renderStats(); renderFilters(); lucide.createIcons();
         }
 
-        // Modal (Ortak)
-        function renderModal() {
-            const overlay = document.getElementById('modal-overlay');
-            const content = document.getElementById('modal-content');
-            if (currentModalIdeaId === null) { overlay.classList.add('hidden'); overlay.classList.remove('flex'); return; }
-            const idea = ideas.find(i => i.id === currentModalIdeaId);
-            if (!idea) return;
-            const theme = getCategoryTheme(idea.category);
-            overlay.classList.remove('hidden'); overlay.classList.add('flex');
-            setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
-            
-            let html = `<div class="sticky top-0 bg-white/90 backdrop-blur z-10 border-b border-slate-100 p-5 flex items-center justify-between"><div class="flex items-center gap-3"><div class="p-2 rounded-xl ${theme.color}"><i data-lucide="${theme.icon}" class="w-5 h-5"></i></div><div><h3 class="text-sm font-bold text-slate-900">${idea.category}</h3><p class="text-xs text-slate-500">${new Date(idea.timestamp).toLocaleDateString('tr-TR')} tarihinde oluşturuldu</p></div></div><button onclick="closeModal()" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button></div>`;
-            html += `<div class="p-6 space-y-6">`;
-            if (isEditing) {
-                const formattedDate = idea.deadline ? new Date(idea.deadline).toISOString().slice(0, 16) : '';
-                const categoryOptions = ALL_CATEGORIES.map(cat => `<option value="${cat}" ${cat === idea.category ? 'selected' : ''}>${cat}</option>`).join('');
-                html += `<div class="space-y-4"><div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Görev İçeriği</label><textarea id="edit-text" class="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none resize-none text-slate-800">${idea.text}</textarea></div><div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Kategori</label><div class="relative"><i data-lucide="layers" class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4 pointer-events-none"></i><select id="edit-category" class="w-full p-3 pl-10 bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-500 outline-none appearance-none text-slate-700">${categoryOptions}</select></div></div><div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hedef Tarih ve Saat</label><input type="datetime-local" id="edit-date" value="${formattedDate}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-indigo-500 outline-none" /></div></div>`;
-            } else {
-                const tagsHtml = idea.tags.map(tag => `<span class="inline-flex items-center text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-full border border-slate-200"><i data-lucide="tag" class="w-2.5 h-2.5 mr-1.5 opacity-50"></i>${tag}</span>`).join('');
-                html += `<div><p class="text-lg text-slate-800 font-medium leading-relaxed whitespace-pre-wrap">${idea.text}</p></div><div class="flex flex-wrap gap-2">${tagsHtml}</div>`;
-                if (idea.deadline) { html += `<div class="bg-indigo-50/50 rounded-xl p-4 border border-indigo-100 flex items-center justify-between"><div class="flex items-center gap-3"><div class="bg-white p-2 rounded-lg text-indigo-600 shadow-sm"><i data-lucide="clock" class="w-4.5 h-4.5"></i></div><div><p class="text-xs font-bold text-indigo-900 uppercase tracking-wide">Kalan Süre</p><p class="text-xs text-indigo-600">${new Date(idea.deadline).toLocaleString('tr-TR')}</p></div></div><div class="countdown-large inline-flex items-center gap-1 font-mono text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-1 rounded border border-indigo-100" data-deadline="${idea.deadline}"><i data-lucide="clock" class="w-3 h-3"></i><span class="time-text">...</span></div></div>`; }
-            }
-            html += `</div><div class="mt-auto bg-slate-50 p-5 border-t border-slate-100 flex items-center gap-3 justify-end">`;
-            if (isEditing) {
-                html += `<button onclick="setEditing(false)" class="px-5 py-2.5 rounded-xl text-slate-600 font-medium hover:bg-slate-200 transition-colors">İptal</button><button onclick="saveEdit()" class="px-6 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all">Değişiklikleri Kaydet</button>`;
-            } else {
-                html += `<button onclick="deleteIdea(${idea.id})" class="mr-auto flex items-center gap-2 px-4 py-2 text-rose-600 hover:bg-rose-50 rounded-lg text-sm font-medium transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i> <span class="hidden sm:inline">Sil</span></button><button onclick="setEditing(true)" class="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white hover:bg-slate-800 rounded-xl text-sm font-medium shadow-lg shadow-slate-200 transition-all"><i data-lucide="pencil" class="w-4 h-4"></i> Düzenle</button>`;
-            }
-            html += `</div>`;
-            content.innerHTML = html;
-            lucide.createIcons();
-            updateCountdowns();
+        function renderStats() {
+            const container = document.getElementById('stats-container');
+            if(container) container.innerHTML = `<div class="bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm text-xs font-bold text-slate-600">Toplam: ${ideas.length}</div>`;
         }
 
-        // Handlers
-        async function handleAdd(e) {
-            e.preventDefault();
-            const textInput = document.getElementById('input-text');
-            const dateInput = document.getElementById('input-date');
-            const btn = document.getElementById('btn-add');
-            const text = textInput.value;
-            if (!text.trim()) return;
-
-            btn.disabled = true;
-            btn.innerHTML = `<div class="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full"></div><span>İşleniyor...</span>`;
-            
-            setTimeout(async () => {
-                const category = categorizeIdea(text);
-                const tags = suggestTags(text);
-                const newIdea = { id: Date.now(), text: text, category: category, tags: tags, timestamp: new Date().toISOString(), deadline: dateInput.value ? new Date(dateInput.value).toISOString() : null };
-                ideas.unshift(newIdea);
-                textInput.value = ''; dateInput.value = '';
-                btn.disabled = true; btn.innerHTML = `<span>Ekle</span><i data-lucide="plus" class="w-4 h-4"></i>`;
-                renderStats(); renderFilters(); renderIdeas();
-                await saveData();
-            }, 450);
+        function renderFilters() {
+            const categories = ['Tümü', ...new Set(ideas.map(i => i.category))];
+            const container = document.getElementById('filters-container');
+            container.innerHTML = categories.map(cat => `
+                <button onclick="activeFilter='${cat}'; renderIdeas()" class="px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${activeFilter === cat ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}">${cat}</button>
+            `).join('');
         }
-
-        async function deleteIdea(id) {
-            ideas = ideas.filter(i => i.id !== id);
-            if (currentModalIdeaId === id) closeModal();
-            renderStats(); renderFilters(); renderIdeas();
-            await saveData();
-        }
-
-        async function saveEdit() {
-            const editText = document.getElementById('edit-text').value;
-            const editCategory = document.getElementById('edit-category').value;
-            const editDate = document.getElementById('edit-date').value;
-            ideas = ideas.map(idea => idea.id === currentModalIdeaId ? { ...idea, text: editText, category: editCategory, deadline: editDate ? new Date(editDate).toISOString() : null } : idea);
-            isEditing = false;
-            renderModal(); renderIdeas(); renderFilters(); renderStats();
-            await saveData();
-        }
-
-        function setFilter(cat) { activeFilter = cat; renderFilters(); renderIdeas(); }
-        function openModal(id) { currentModalIdeaId = id; isEditing = false; renderModal(); }
-        function closeModal() { currentModalIdeaId = null; isEditing = false; document.getElementById('modal-overlay').classList.add('hidden'); document.getElementById('modal-overlay').classList.remove('flex'); }
-        function setEditing(status) { isEditing = status; renderModal(); }
-        
-        function updateCountdowns() {
-            const elements = document.querySelectorAll('[data-deadline]');
-            elements.forEach(el => {
-                const time = calculateTimeLeft(el.getAttribute('data-deadline'));
-                const isMinimal = el.classList.contains('countdown-minimal');
-                const textEl = el.querySelector('.time-text');
-                if (time.isExpired) {
-                    el.className = `inline-flex items-center gap-1 text-rose-600 bg-rose-50 rounded font-bold ${isMinimal ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-1'}`;
-                    textEl.textContent = isMinimal ? '' : 'Süre Doldu';
-                } else {
-                    el.className = `inline-flex items-center gap-1 font-mono font-medium text-indigo-600 bg-indigo-50 rounded border border-indigo-100 ${isMinimal ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-1'}`;
-                    textEl.textContent = `${time.days > 0 ? time.days+'g ' : ''}${time.hours.toString().padStart(2,'0')}:${time.minutes.toString().padStart(2,'0')}:${time.seconds.toString().padStart(2,'0')}`;
-                }
-            });
-        }
-
-        // Init
-        document.getElementById('add-idea-form').addEventListener('submit', handleAdd);
-        document.getElementById('input-text').addEventListener('input', (e) => document.getElementById('btn-add').disabled = !e.target.value.trim());
-        setInterval(updateCountdowns, 1000);
-
     </script>
 </body>
 </html>
