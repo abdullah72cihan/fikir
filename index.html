@@ -3,830 +3,651 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akıllı Görevler Pro</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide İkon Seti -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Yazı Tipi -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>TaskFlow - Secure V10</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
-        
-        /* Animasyonlar */
-        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .scale-in { animation: scaleIn 0.2s ease-out forwards; }
-        @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-        /* Loader */
-        .loader { border-top-color: #4F46E5; -webkit-animation: spinner 1s linear infinite; animation: spinner 1s linear infinite; }
-        @keyframes spinner { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Scrollbar Gizleme */
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Kart Sayaç Stili */
-        .countdown-badge {
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -0.5px;
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --bg-body: #f1f5f9;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         
-        /* Modern Hap (Pill) Inputlar */
-        .modern-pill {
-            @apply flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm font-medium transition-all cursor-pointer hover:bg-slate-200 hover:text-indigo-600 relative shadow-sm border border-transparent;
+        body { background-color: var(--bg-body); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* Ortak Bileşenler */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 10px 20px; border-radius: var(--radius-sm); border: none; font-weight: 600; font-size: 0.95rem;
+            cursor: pointer; transition: all 0.2s ease; text-decoration: none; white-space: nowrap;
         }
-        .modern-pill.active {
-            @apply bg-indigo-50 border-indigo-200 text-indigo-700;
+        .btn-primary { background: var(--primary); color: white; box-shadow: var(--shadow-sm); }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-outline { background: white; border: 1px solid var(--border); color: var(--text-muted); }
+        .btn-outline:hover { border-color: var(--text-muted); color: var(--text-main); background: #f8fafc; }
+        .btn-danger { background: #fee2e2; color: var(--danger); }
+        .btn-sm { padding: 6px 12px; font-size: 0.85rem; }
+        .btn-ghost { background: transparent; color: var(--text-muted); padding: 8px; border: none; cursor: pointer; border-radius: 50%; transition: all 0.2s; }
+        .btn-ghost:hover { background: #e2e8f0; color: var(--text-main); }
+        .w-100 { width: 100%; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 600; color: var(--text-main); }
+        .form-control {
+            width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+            font-size: 0.95rem; outline: none; transition: border-color 0.2s; background: #fff;
         }
-        .modern-pill select, .modern-pill input {
-            @apply absolute inset-0 opacity-0 cursor-pointer w-full h-full appearance-none;
+        .form-control:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); }
+        .error-msg { color: var(--danger); font-size: 0.8rem; margin-top: 4px; display: none; }
+
+        /* Layout */
+        #landing-view { min-height: 100vh; display: flex; flex-direction: column; }
+        .navbar {
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border); padding: 15px 0; position: sticky; top: 0; z-index: 100;
+        }
+        .nav-container {
+            max-width: 1200px; margin: 0 auto; padding: 0 20px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+        .hero-section {
+            flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px;
+            background: radial-gradient(circle at 50% 0%, #eef2ff 0%, transparent 60%);
+        }
+        .hero-content { max-width: 600px; text-align: center; }
+        .hero-title { font-size: 3rem; font-weight: 800; line-height: 1.1; margin-bottom: 20px; color: #0f172a; }
+        .hero-text { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 30px; line-height: 1.6; }
+
+        /* Dashboard */
+        #dashboard-view { display: none; min-height: 100vh; background: var(--bg-body); }
+        .dash-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 15px 0; margin-bottom: 20px; }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .avatar {
+            width: 36px; height: 36px; background: linear-gradient(135deg, var(--primary), var(--primary-light)); color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem; box-shadow: var(--shadow-sm);
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+        /* Hızlı Ekleme */
+        .quick-add-container {
+            background: var(--surface); padding: 8px; border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md); margin-bottom: 30px; border: 1px solid var(--border);
+            display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+        }
+        .quick-input { flex: 1; border: none; outline: none; font-size: 1.05rem; padding: 12px; min-width: 200px; background: transparent; }
+        .quick-date { 
+            border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; 
+            color: var(--text-muted); font-size: 0.9rem; outline: none; background: #f8fafc; font-family: inherit; cursor: pointer;
+        }
+        .quick-date:focus { border-color: var(--primary); background: white; color: var(--text-main); }
+
+        /* Task Cards */
+        .task-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding-bottom: 60px; }
+        
+        .task-card {
+            background: var(--surface); border-radius: var(--radius-md); border: 1px solid var(--border);
+            padding: 20px; display: flex; flex-direction: column; transition: all 0.2s ease; position: relative; cursor: pointer;
+            box-shadow: var(--shadow-sm);
+        }
+        .task-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); border-color: var(--primary-light); }
+        
+        .task-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .badge { font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; text-transform: uppercase; background: #f1f5f9; color: var(--text-muted); }
+        
+        .btn-icon-delete {
+            background: transparent; border: none; color: #cbd5e1; cursor: pointer; padding: 6px;
+            border-radius: 6px; transition: all 0.2s; font-size: 1rem; margin-top: -5px; margin-right: -5px;
+        }
+        .btn-icon-delete:hover { color: var(--danger); background: #fee2e2; }
+
+        .task-body { font-size: 1rem; color: var(--text-main); margin-bottom: 15px; line-height: 1.5; flex-grow: 1; font-weight: 500; }
+        
+        .task-footer { border-top: 1px solid var(--border); padding-top: 12px; font-size: 0.85rem; color: var(--text-muted); }
+        .footer-row { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; }
+        .deadline { display: flex; align-items: center; gap: 6px; background: #f8fafc; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); }
+        .deadline.urgent { color: var(--danger); background: #fef2f2; border-color: #fecaca; font-weight: 600; }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            display: none; justify-content: center; align-items: center; z-index: 1000;
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-box {
+            background: var(--surface); padding: 30px; border-radius: var(--radius-lg);
+            width: 90%; max-width: 500px; position: relative; box-shadow: var(--shadow-lg);
+            transform: translateY(20px); transition: transform 0.3s;
+            max-height: 90vh; overflow-y: auto;
+        }
+        .modal-overlay.active .modal-box { transform: translateY(0); }
+        .modal-header { font-size: 1.4rem; font-weight: 800; margin-bottom: 25px; color: var(--text-main); display: flex; justify-content: space-between; align-items: center; }
+        .close-modal { background: none; border: none; font-size: 1.6rem; cursor: pointer; color: var(--text-muted); }
+
+        /* Warning Box */
+        .warning-box {
+            background: #fffbeb; border: 1px solid #fcd34d; color: #92400e; padding: 15px;
+            border-radius: var(--radius-sm); font-size: 0.9rem; margin-bottom: 15px; display: flex; align-items: flex-start; gap: 10px;
+        }
+
+        /* Loader & Toast */
+        .loader { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(255,255,255,0.8); z-index: 2000; display: none; justify-content: center; align-items: center; }
+        .spinner { width: 45px; height: 45px; border: 4px solid #e2e8f0; border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #toast-container { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 3000; }
+        .toast { background: #1e293b; color: white; padding: 14px 28px; border-radius: 50px; margin-top: 10px; display: flex; align-items: center; gap: 12px; box-shadow: var(--shadow-lg); animation: slideUp 0.3s; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        @media (max-width: 600px) {
+            .hero-title { font-size: 2.2rem; }
+            .nav-container { padding: 0 15px; }
+            .modal-box { padding: 20px; width: 95%; }
+            .quick-add-container { flex-direction: column; align-items: stretch; padding: 15px; }
         }
     </style>
 </head>
-<body class="text-slate-800 min-h-screen pb-20">
+<body>
 
-    <!-- ARKA PLAN DEKORASYONU -->
-    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 bg-indigo-200/30 rounded-full blur-3xl"></div>
-        <div class="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-200/30 rounded-full blur-3xl"></div>
-    </div>
+    <div id="loader" class="loader"><div class="spinner"></div></div>
+    <div id="toast-container"></div>
 
-    <!-- ================= ANA UYGULAMA ALANI ================= -->
-    <div id="app-content" class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        
-        <!-- HEADER -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-6">
-            <div>
-                <div class="flex items-center gap-3 mb-2">
-                    <div id="mode-badge-container" class="flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600 transition-colors">
-                        <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>
-                        <span id="mode-text">Misafir Modu</span>
-                    </div>
+    <!-- 1. LANDING VIEW -->
+    <div id="landing-view">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo" onclick="window.location.reload()"><i class="fa-solid fa-layer-group"></i> TaskFlow</div>
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="openModal('login-modal')" class="btn btn-outline btn-sm">Giriş Yap</button>
+                    <button onclick="openModal('register-modal')" class="btn btn-primary btn-sm">Kayıt Ol</button>
                 </div>
-                <h1 class="text-4xl font-extrabold text-slate-900 tracking-tight">Akıllı Görevler <span class="text-indigo-600">.Pro</span></h1>
             </div>
-
-            <!-- SAĞ ÜST KONTROLLER -->
-            <div class="flex flex-wrap items-center justify-end gap-3 w-full md:w-auto">
-                <!-- Misafir Modu Araçları (Yedekleme) -->
-                <div id="guest-tools" class="hidden flex items-center gap-2">
-                    <button onclick="exportData()" class="p-2.5 bg-white border border-slate-200 text-slate-500 rounded-xl hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm group" title="Yedek İndir">
-                        <i data-lucide="download" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
+        </nav>
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">Görevlerini <span style="color:var(--primary);">Güvenle</span> Yönet.</h1>
+                <p class="hero-text">Hızlı, şifreli ve güvenli. Üye olmadan veya hesabınla hemen başla.</p>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="startGuestMode()" class="btn btn-outline" style="padding: 14px 28px;">
+                        <i class="fa-solid fa-ghost"></i> Misafir Modu
                     </button>
-                    <label class="p-2.5 bg-white border border-slate-200 text-slate-500 rounded-xl hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm cursor-pointer group" title="Yedek Yükle">
-                        <i data-lucide="upload" class="w-5 h-5 group-hover:scale-110 transition-transform"></i>
-                        <input type="file" id="import-file" class="hidden" accept=".json" onchange="importData(this)">
-                    </label>
-                    <div class="h-8 w-px bg-slate-200 mx-2"></div>
-                </div>
-
-                <!-- İstatistikler -->
-                <div class="hidden md:flex flex-col items-end mr-4">
-                    <span id="stats-total" class="text-2xl font-bold text-slate-800 leading-none">0</span>
-                    <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Toplam</span>
-                </div>
-                
-                <div id="auth-section">
-                    <!-- JS ile Dolacak -->
+                    <button onclick="openModal('register-modal')" class="btn btn-primary" style="padding: 14px 28px;">
+                        Hesap Oluştur <i class="fa-solid fa-arrow-right"></i>
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- EKLEME FORMU (MODERN & GENİŞ) -->
-        <div class="relative bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-white mb-10 overflow-hidden transition-all hover:shadow-2xl hover:shadow-indigo-100/50 group focus-within:ring-2 focus-within:ring-indigo-100">
-            <form id="add-idea-form" class="flex flex-col">
-                <div class="p-1">
-                    <textarea id="input-text" placeholder="Bugün neyi başarmak istersin?" class="w-full h-40 p-6 bg-transparent text-lg text-slate-700 placeholder:text-slate-300 outline-none resize-none font-medium leading-relaxed" required></textarea>
+    <!-- 2. DASHBOARD VIEW -->
+    <div id="dashboard-view">
+        <header class="dash-header">
+            <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="logo" style="font-size: 1.3rem;" onclick="window.location.reload()"><i class="fa-solid fa-layer-group"></i> TaskFlow</div>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button onclick="fetchTasks()" class="btn btn-ghost" title="Yenile"><i class="fa-solid fa-rotate"></i></button>
+                    <div id="auth-buttons-container" style="display: flex; gap: 8px;"></div>
                 </div>
-                <div class="bg-slate-50/80 backdrop-blur-sm border-t border-slate-100 px-6 py-4 flex flex-wrap items-center justify-between gap-4">
-                    
-                    <!-- Sol Taraf: Seçim Araçları -->
-                    <div class="flex flex-wrap items-center gap-3">
-                        
-                        <!-- Tarih (İkon Sadece) -->
-                        <div class="modern-pill group/date" id="date-pill" title="Tarih Ekle">
-                            <i data-lucide="calendar" class="w-5 h-5 text-slate-400 group-hover/date:text-indigo-500 transition-colors"></i>
-                            <span id="date-display-text" class="hidden text-xs font-bold text-indigo-600 ml-1"></span>
-                            <input type="datetime-local" id="input-date" onchange="updateDateDisplay(this)">
-                        </div>
+            </div>
+        </header>
 
-                        <!-- Kategori (İkon Sadece) -->
-                        <div class="modern-pill group/cat" id="cat-pill" title="Kategori Seç">
-                            <i data-lucide="tag" class="w-5 h-5 text-slate-400 group-hover/cat:text-indigo-500 transition-colors"></i>
-                            <span id="cat-display-text" class="hidden text-xs font-bold text-indigo-600 ml-1"></span>
-                            <select id="input-category" onchange="updateCatDisplay(this)">
-                                <!-- JS ile dolacak -->
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Sağ Taraf: Ekle Butonu -->
-                    <button type="submit" id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" disabled>
-                        <span>Oluştur</span>
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    </button>
+        <main class="container">
+            <!-- HIZLI EKLEME BARI -->
+            <div class="quick-add-container">
+                <input type="text" id="quick-text" class="quick-input" placeholder="Yeni görev... (Örn: Yarın 14:30 toplantı)" onkeypress="handleEnter(event)">
+                <input type="datetime-local" id="quick-date" class="quick-date" title="Tarih ve Saat">
+                <button onclick="quickAddTask()" class="btn btn-primary" style="width: auto; padding: 12px 20px; border-radius: var(--radius-md);">
+                    <i class="fa-solid fa-plus"></i> Ekle
+                </button>
+            </div>
+            
+            <div id="task-grid" class="task-grid">
+                <!-- JS render -->
+            </div>
+        </main>
+    </div>
+
+    <!-- DETAILS MODAL -->
+    <div id="detail-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-header">
+                <span id="detail-title">Detaylar</span>
+                <button class="close-modal" onclick="closeModal('detail-modal')">&times;</button>
+            </div>
+            <div style="margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                <span id="detail-category" class="badge"></span>
+                <span id="detail-tags" style="font-size: 0.85rem; color: var(--primary);"></span>
+            </div>
+            <p id="detail-text" style="font-size: 1.15rem; line-height: 1.6; color: var(--text-main); margin-bottom: 30px; white-space: pre-wrap; font-weight: 500;"></p>
+            <div style="display: flex; gap: 15px; margin-top: 30px;">
+                <button id="btn-edit-task" class="btn btn-primary w-100">Düzenle</button>
+                <button id="btn-delete-task" class="btn btn-danger w-100">Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT MODAL (Fixed ID Handling) -->
+    <div id="edit-modal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeModal('edit-modal')">&times;</button>
+            <div class="modal-header">Görevi Düzenle</div>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id"> <!-- CRITICAL: This holds the ID -->
+                <div class="form-group">
+                    <label class="form-label">Görev</label>
+                    <textarea id="edit-text" class="form-control" rows="3" required></textarea>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">Kategori</label>
+                    <select id="edit-category" class="form-control">
+                        <option value="Genel">Genel</option>
+                        <option value="İş">İş</option>
+                        <option value="Kişisel">Kişisel</option>
+                        <option value="Proje">Proje</option>
+                        <option value="Acil">Acil</option>
+                        <option value="Eğitim">Eğitim</option>
+                        <option value="Sağlık">Sağlık</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Etiketler</label>
+                    <input type="text" id="edit-tags" class="form-control" placeholder="Örn: toplantı, önemli">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tarih ve Saat</label>
+                    <input type="datetime-local" id="edit-deadline" class="form-control">
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Güncelle</button>
             </form>
         </div>
-
-        <!-- FİLTRELER VE ARAMA -->
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
-            
-            <!-- Sol: Arama -->
-            <div class="relative w-full sm:w-64">
-                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" id="search-input" placeholder="Görevlerde ara..." class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm" oninput="renderIdeas()">
-            </div>
-
-            <!-- Orta: Kategoriler (Scrollable) -->
-            <div class="overflow-x-auto pb-1 scrollbar-hide flex-1 w-full sm:w-auto px-1">
-                <div id="filters-container" class="flex gap-2 min-w-max">
-                    <!-- JS ile dolacak -->
-                </div>
-            </div>
-
-            <!-- Sağ: Gruplama -->
-            <button onclick="toggleGrouping()" id="btn-group-toggle" class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border bg-white text-slate-500 border-slate-200 hover:bg-slate-50 whitespace-nowrap shadow-sm hover:text-indigo-600">
-                <i data-lucide="layout-list" class="w-4 h-4"></i>
-                <span>Grupla</span>
-            </button>
-        </div>
-
-        <!-- GÖREV KARTLARI KONTEYNERİ -->
-        <div id="ideas-container">
-            <!-- Loading -->
-            <div id="loading-spinner" class="py-20 text-center hidden">
-                <div class="loader ease-linear rounded-full border-4 border-t-4 border-indigo-200 h-12 w-12 mb-4 mx-auto"></div>
-                <p class="text-slate-400 font-medium animate-pulse">Veriler hazırlanıyor...</p>
-            </div>
-            
-            <!-- Grid veya Grouped Yapı buraya JS ile basılacak -->
-            <div id="ideas-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
-        </div>
-
     </div>
 
-    <!-- ================= MODALLER ================= -->
-
-    <!-- AUTH MODAL -->
-    <div id="auth-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm fade-in">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden relative scale-in">
-            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 z-10"><i data-lucide="x" class="w-5 h-5"></i></button>
-            <div class="flex border-b border-slate-100">
-                <button onclick="switchAuthTab('login')" id="tab-login" class="flex-1 py-4 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 transition-colors">Giriş Yap</button>
-                <button onclick="switchAuthTab('register')" id="tab-register" class="flex-1 py-4 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-colors">Kaydol</button>
-            </div>
-            <div class="p-8">
-                <!-- LOGIN FORM -->
-                <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
-                    <input type="email" id="login-email" placeholder="E-posta Adresi" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 focus:bg-white transition-all" required>
-                    <input type="password" id="login-pass" placeholder="Şifre" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 focus:bg-white transition-all" required>
-                    <div class="text-right">
-                        <button type="button" onclick="switchAuthTab('forgot')" class="text-xs text-indigo-500 hover:underline">Şifremi Unuttum?</button>
-                    </div>
-                    <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">Giriş Yap</button>
-                </form>
-                <!-- REGISTER FORM -->
-                <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
-                    <input type="text" id="reg-name" placeholder="Ad Soyad" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500" required>
-                    <input type="email" id="reg-email" placeholder="E-posta" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500" required>
-                    <input type="password" id="reg-pass" placeholder="Şifre" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500" required>
-                    <input type="password" id="reg-pass-confirm" placeholder="Şifre (Tekrar)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500" required>
-                    <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">Kaydol</button>
-                </form>
-                <!-- FORGOT FORM -->
-                <form id="form-forgot" onsubmit="handleForgot(event)" class="space-y-4 hidden">
-                    <p class="text-xs text-slate-500 mb-2">Kayıt sırasında size verilen Kurtarma Anahtarını kullanın.</p>
-                    <input type="email" id="forgot-email" placeholder="E-posta" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500" required>
-                    <input type="text" id="forgot-key" placeholder="Kurtarma Anahtarı (REC-...)" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 font-mono text-xs" required>
-                    <input type="password" id="forgot-new-pass" placeholder="Yeni Şifre" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-indigo-500" required>
-                    <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 transition-all">Şifreyi Sıfırla</button>
-                    <button type="button" onclick="switchAuthTab('login')" class="w-full py-2 text-slate-400 text-xs hover:text-slate-600">Girişe Dön</button>
-                </form>
-                <!-- AUTH LOADING -->
-                <div id="auth-loading" class="hidden absolute inset-0 bg-white/90 flex flex-col items-center justify-center z-20">
-                    <div class="loader w-8 h-8 rounded-full border-4 border-indigo-200 border-t-indigo-600 mb-2"></div>
-                    <span class="text-xs font-bold text-indigo-600">İşleniyor...</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- RECOVERY KEY MODAL -->
-    <div id="recovery-modal" class="fixed inset-0 z-[60] hidden items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md fade-in">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center scale-in">
-            <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4"><i data-lucide="key" class="w-7 h-7"></i></div>
-            <h3 class="text-lg font-bold text-slate-800">Kayıt Başarılı!</h3>
-            <p class="text-sm text-slate-500 mt-2 mb-4">Bu anahtarı kaybetmeyin. Şifrenizi unutursanız tek kurtarma yolunuz budur.</p>
-            <div class="bg-slate-100 p-3 rounded-lg border border-slate-200 mb-4 break-all relative group cursor-pointer" onclick="copyRecoveryKey()">
-                <code id="display-recovery-key" class="font-mono text-sm font-bold text-slate-700"></code>
-                <div class="absolute inset-0 bg-slate-900/5 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-lg transition-opacity"><span class="text-xs font-bold text-slate-600">Kopyalamak için tıkla</span></div>
-            </div>
-            <button onclick="closeRecoveryModal()" class="w-full py-2.5 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 transition-all">Anladım, Sakladım</button>
-        </div>
-    </div>
-
-    <!-- TASK DETAIL / EDIT MODAL -->
-    <div id="task-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm fade-in">
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden scale-in relative flex flex-col max-h-[90vh]">
-            <!-- Header -->
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Görev Detayı</span>
-                <button onclick="closeTaskModal()" class="p-2 bg-white rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors shadow-sm border border-slate-100"><i data-lucide="x" class="w-4 h-4"></i></button>
-            </div>
+    <!-- REGISTER MODAL (With Warning) -->
+    <div id="register-modal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeModal('register-modal')">&times;</button>
+            <div class="modal-header">Hesap Oluştur</div>
             
-            <!-- Body -->
-            <div class="p-6 space-y-5 overflow-y-auto">
-                <!-- Text Edit -->
+            <div class="warning-box">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size:1.2rem;"></i>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Görev</label>
-                    <textarea id="edit-task-text" class="w-full h-32 p-4 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-indigo-500 outline-none text-slate-800 resize-none text-base"></textarea>
+                    <strong>DİKKAT:</strong> "Kurtarma Anahtarı" şifrenizi sıfırlamanın TEK yoludur. Lütfen güvenli bir yerde saklayın.
+                </div>
+            </div>
+
+            <form id="register-form">
+                <div class="form-group"><label class="form-label">Ad Soyad</label><input type="text" id="reg-name" class="form-control" required></div>
+                <div class="form-group"><label class="form-label">E-Posta</label><input type="email" id="reg-email" class="form-control" required></div>
+                <div class="form-group"><label class="form-label">Şifre</label><input type="password" id="reg-pass" class="form-control" required minlength="6"></div>
+                <div class="form-group"><label class="form-label">Şifre Tekrar</label><input type="password" id="reg-pass-confirm" class="form-control" required><div id="pass-match-error" class="error-msg">Şifreler eşleşmiyor!</div></div>
+                
+                <div class="form-group" style="border: 1px solid #e2e8f0; padding: 10px; border-radius: 8px; background: #f8fafc;">
+                    <label class="form-label" style="color:var(--primary);">Kurtarma Anahtarı (Özel)</label>
+                    <input type="text" id="reg-key" class="form-control" placeholder="Örn: ilk_arabam_kirmizi" required style="border-color:var(--primary-light);">
+                    <small style="display:block; margin-top:5px; font-size:0.75rem; color:var(--text-muted);">Bunu unutursanız hesabınıza erişemezsiniz.</small>
                 </div>
                 
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Category Edit -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Kategori</label>
-                        <div class="relative">
-                            <select id="edit-task-category" class="w-full p-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500 appearance-none text-sm font-medium text-slate-700"></select>
-                            <i data-lucide="chevron-down" class="absolute right-3 top-3.5 w-4 h-4 text-slate-400 pointer-events-none"></i>
-                        </div>
-                    </div>
-                    <!-- Date Edit -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1.5 uppercase">Son Tarih</label>
-                        <input type="datetime-local" id="edit-task-date" class="w-full p-3 bg-white border border-slate-200 rounded-xl outline-none focus:border-indigo-500 text-sm font-medium text-slate-700">
-                    </div>
-                </div>
+                <button type="submit" class="btn btn-primary w-100">Kayıt Ol</button>
+            </form>
+            <div style="text-align: center; margin-top: 15px; font-size: 0.9rem;">Zaten üye misin? <a href="#" onclick="switchModal('register-modal', 'login-modal')" style="color: var(--primary); font-weight: 600;">Giriş Yap</a></div>
+        </div>
+    </div>
 
-                <!-- Info Box -->
-                <div class="bg-indigo-50 p-4 rounded-xl flex items-start gap-3 border border-indigo-100">
-                    <i data-lucide="info" class="w-5 h-5 text-indigo-600 shrink-0 mt-0.5"></i>
-                    <p class="text-xs text-indigo-700 leading-relaxed">
-                        Bu görev <span id="edit-task-created" class="font-bold"></span> tarihinde oluşturuldu. 
-                        Düzenlemeler otomatik olarak <span id="edit-sync-status" class="font-bold"></span> senkronize edilir.
-                    </p>
+    <!-- LOGIN & FORGOT MODALS -->
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeModal('login-modal')">&times;</button>
+            <div class="modal-header">Giriş Yap</div>
+            <form id="login-form">
+                <div class="form-group"><label class="form-label">E-Posta</label><input type="email" id="login-email" class="form-control" required></div>
+                <div class="form-group"><label class="form-label">Şifre</label><input type="password" id="login-password" class="form-control" required>
+                    <div style="text-align: right; margin-top: 5px;"><a href="#" onclick="switchModal('login-modal', 'forgot-modal')" style="font-size: 0.8rem; color: var(--primary);">Şifremi Unuttum?</a></div>
                 </div>
-            </div>
+                <button type="submit" class="btn btn-primary w-100">Giriş Yap</button>
+            </form>
+            <div style="text-align: center; margin-top: 15px; font-size: 0.9rem;">Hesabın yok mu? <a href="#" onclick="switchModal('login-modal', 'register-modal')" style="color: var(--primary); font-weight: 600;">Kayıt Ol</a></div>
+        </div>
+    </div>
 
-            <!-- Footer -->
-            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
-                <button onclick="deleteCurrentTask()" class="text-rose-500 hover:text-rose-700 hover:bg-rose-50 px-4 py-2 rounded-lg text-sm font-bold transition-colors flex items-center gap-2">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i> Sil
-                </button>
-                <button onclick="saveTaskEdit()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center gap-2">
-                    <i data-lucide="check" class="w-4 h-4"></i> Kaydet
-                </button>
-            </div>
+    <div id="forgot-modal" class="modal-overlay">
+        <div class="modal-box">
+            <button class="close-modal" onclick="closeModal('forgot-modal')">&times;</button>
+            <div class="modal-header">Şifre Sıfırla</div>
+            <form id="forgot-form">
+                <div class="form-group"><label class="form-label">E-Posta</label><input type="email" id="forgot-email" class="form-control" required></div>
+                <div class="form-group"><label class="form-label">Kurtarma Anahtarı</label><input type="text" id="forgot-key" class="form-control" required></div>
+                <div class="form-group"><label class="form-label">Yeni Şifre</label><input type="password" id="forgot-new-pass" class="form-control" required minlength="6"></div>
+                <button type="submit" class="btn btn-primary w-100">Şifreyi Güncelle</button>
+            </form>
+            <div style="text-align: center; margin-top: 15px;"><a href="#" onclick="switchModal('forgot-modal', 'login-modal')" style="color: var(--text-muted); font-size: 0.9rem;">Girişe Dön</a></div>
         </div>
     </div>
 
     <script>
-        // ================= AYARLAR =================
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyjw0ubA9u0zZTx7e93-YA-m8GUU_0imDbaM8cCWH7XuF9uxPETR2gYgCHLh_E14eGU/exec";
-        const LOCAL_STORAGE_KEY = 'smart_tasks_pro_local';
+        // --- AYARLAR ---
+        // !!! BURAYA GÜNCELLEDİĞİNİZ BACKEND URL'SİNİ YAZIN !!!
+        const API_URL = "https://script.google.com/macros/s/AKfycbyjw0ubA9u0zZTx7e93-YA-m8GUU_0imDbaM8cCWH7XuF9uxPETR2gYgCHLh_E14eGU/exec";
         
-        // Kapsamlı Kategori Listesi
-        const ALL_CATEGORIES = [
-            'Genel', 'İş & Kariyer', 'Toplantı', 'Proje', 
-            'Kişisel Gelişim', 'Eğitim & Okul', 'Ödevler', 
-            'Sağlık & Spor', 'Diyet', 'Doktor',
-            'Finans & Ödemeler', 'Faturalar', 'Banka',
-            'Alışveriş', 'Market', 'Ev & Yaşam', 
-            'Seyahat & Tatil', 'Sosyal & Etkinlik', 
-            'Teknoloji & Yazılım', 'Kodlama', 
-            'Yaratıcı İşler', 'Tasarım', 'Acil & Önemli'
-        ];
+        let currentUser = JSON.parse(localStorage.getItem('smartTaskUser_v10')) || null;
+        let isGuestMode = localStorage.getItem('isGuestMode_v10') === 'true';
+        let tasks = [];
 
-        // Durum Yönetimi
-        let isGuestMode = true;
-        let currentUser = null;
-        let ideas = [];
-        let activeFilter = 'Tümü';
-        let isGrouped = false; 
-        let currentEditingId = null;
+        // --- AUTH & INIT ---
+        function checkAuth() {
+            const landing = document.getElementById('landing-view');
+            const dashboard = document.getElementById('dashboard-view');
+            const authContainer = document.getElementById('auth-buttons-container');
 
-        // ================= BAŞLATMA =================
-        window.onload = function() {
-            lucide.createIcons();
-            populateSelectOptions();
-            loadData();
-            renderAuthSection();
-            setInterval(updateCountdowns, 1000);
-        };
-
-        // ================= KATEGORİ & ARAYÜZ YÖNETİMİ =================
-        function populateSelectOptions() {
-            const select = document.getElementById('input-category');
-            // Boş seçenek (Placeholder gibi)
-            select.innerHTML = '<option value="" selected disabled hidden></option>';
-            ALL_CATEGORIES.forEach(cat => { select.innerHTML += `<option value="${cat}">${cat}</option>`; });
-
-            const editSelect = document.getElementById('edit-task-category');
-            editSelect.innerHTML = '';
-            ALL_CATEGORIES.forEach(cat => { editSelect.innerHTML += `<option value="${cat}">${cat}</option>`; });
-        }
-
-        // --- HAP (PILL) GÖRÜNÜM GÜNCELLEMELERİ ---
-        function updateDateDisplay(input) {
-            const pill = document.getElementById('date-pill');
-            const text = document.getElementById('date-display-text');
-            if(input.value) {
-                const d = new Date(input.value);
-                text.innerText = d.toLocaleDateString('tr-TR', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
-                text.classList.remove('hidden');
-                pill.classList.add('active');
-            } else {
-                text.innerText = '';
-                text.classList.add('hidden');
-                pill.classList.remove('active');
-            }
-        }
-
-        function updateCatDisplay(select) {
-            const text = document.getElementById('cat-display-text');
-            const pill = document.getElementById('cat-pill');
-            if(select.value) {
-                text.innerText = select.value;
-                text.classList.remove('hidden');
-                pill.classList.add('active');
-            } else {
-                text.innerText = '';
-                text.classList.add('hidden');
-                pill.classList.remove('active');
-            }
-        }
-
-        // ================= FİLTRELER (DİNAMİK) =================
-        function renderFilters() {
-            const container = document.getElementById('filters-container');
-            container.innerHTML = '';
-
-            const btnAll = document.createElement('button');
-            btnAll.className = `px-4 py-2 rounded-full text-xs font-bold transition-all border whitespace-nowrap ${activeFilter === 'Tümü' ? 'bg-slate-800 text-white border-slate-800 shadow-md transform scale-105' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`;
-            btnAll.innerText = 'Tümü';
-            btnAll.onclick = () => setFilter('Tümü');
-            container.appendChild(btnAll);
-
-            const activeCats = [...new Set(ideas.map(i => i.category))].sort();
-            
-            activeCats.forEach(cat => {
-                const btn = document.createElement('button');
-                const isActive = activeFilter === cat;
-                btn.className = `px-4 py-2 rounded-full text-xs font-bold transition-all border whitespace-nowrap ${isActive ? 'bg-slate-800 text-white border-slate-800 shadow-md transform scale-105' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50'}`;
-                btn.innerText = cat;
-                btn.onclick = () => setFilter(cat);
-                container.appendChild(btn);
-            });
-
-            if (activeFilter !== 'Tümü' && !activeCats.includes(activeFilter)) {
-                setFilter('Tümü');
-            }
-        }
-
-        function setFilter(cat) {
-            activeFilter = cat;
-            renderFilters();
-            renderIdeas();
-        }
-
-        // ================= GRUPLANDIRMA =================
-        function toggleGrouping() {
-            isGrouped = !isGrouped;
-            const btn = document.getElementById('btn-group-toggle');
-            if(isGrouped) {
-                btn.className = "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border whitespace-nowrap bg-indigo-50 text-indigo-600 border-indigo-200 shadow-sm";
-                btn.innerHTML = `<i data-lucide="layout-grid" class="w-4 h-4"></i><span>Grubu Boz</span>`;
-            } else {
-                btn.className = "flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border whitespace-nowrap bg-white text-slate-500 border-slate-200 hover:bg-slate-50 shadow-sm hover:text-indigo-600";
-                btn.innerHTML = `<i data-lucide="layout-list" class="w-4 h-4"></i><span>Grupla</span>`;
-            }
-            lucide.createIcons();
-            renderIdeas();
-        }
-
-        // ================= VERİ YÖNETİMİ & YEDEKLEME =================
-        async function loadData() {
-            document.getElementById('loading-spinner').classList.remove('hidden');
-            
-            if (isGuestMode) {
-                const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
-                ideas = localData ? JSON.parse(localData) : [];
-                finishLoading();
-                document.getElementById('guest-tools').classList.remove('hidden');
-                document.getElementById('guest-tools').classList.add('flex');
-            } else {
-                document.getElementById('guest-tools').classList.add('hidden');
-                try {
-                    const res = await apiCall({ action: 'read' });
-                    if (res.status === 'success') {
-                        ideas = res.data.filter(t => t.userEmail === currentUser.email);
-                    }
-                } catch (e) { console.error(e); }
-                finishLoading();
-            }
-        }
-
-        function exportData() {
-            const dataStr = JSON.stringify(ideas, null, 2);
-            const blob = new Blob([dataStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `gorevler_yedek_${new Date().toISOString().slice(0,10)}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function importData(input) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const imported = JSON.parse(e.target.result);
-                    if(Array.isArray(imported)) {
-                        if(confirm(`Yedekten ${imported.length} görev yüklenecek. Mevcut verilerin üzerine eklensin mi?`)) {
-                            ideas = [...ideas, ...imported];
-                            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ideas));
-                            renderIdeas();
-                            updateStats();
-                            alert("Yedekleme başarıyla yüklendi!");
-                        }
-                    }
-                } catch(err) { alert("Dosya formatı hatalı!"); }
-            };
-            reader.readAsText(file);
-            input.value = '';
-        }
-
-        async function saveData(task, action = 'create') {
-            if (action === 'create') ideas.unshift(task);
-            else if (action === 'update') {
-                const idx = ideas.findIndex(i => i.id === task.id);
-                if (idx !== -1) ideas[idx] = task;
-            }
-            else if (action === 'delete') {
-                ideas = ideas.filter(i => i.id !== task.id);
-            }
-
-            renderIdeas();
-            renderFilters();
-            updateStats();
-
-            if (isGuestMode) {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(ideas));
-            } else {
-                try {
-                    const res = await apiCall({ action: action, task: task, id: task.id });
-                    if (res.status === 'error') throw new Error(res.message);
-                } catch (e) { 
-                    console.error("Sync Error", e);
-                    alert("Senkronizasyon hatası: " + (e.message || "İnternet bağlantısı yok."));
-                    loadData(); // Revert changes
+            if (currentUser || isGuestMode) {
+                landing.style.display = 'none';
+                dashboard.style.display = 'block';
+                if (currentUser) {
+                    authContainer.innerHTML = `
+                        <div class="user-profile">
+                            <div class="avatar">${currentUser.name.charAt(0).toUpperCase()}</div>
+                            <span style="font-weight:600; font-size:0.9rem;">${currentUser.name}</span>
+                            <button onclick="logout()" class="btn btn-outline btn-sm" title="Çıkış"><i class="fa-solid fa-right-from-bracket"></i></button>
+                        </div>`;
+                } else {
+                    authContainer.innerHTML = `
+                        <button onclick="openModal('login-modal')" class="btn btn-outline btn-sm">Giriş</button>
+                        <button onclick="openModal('register-modal')" class="btn btn-primary btn-sm">Kayıt</button>
+                    `;
                 }
+                fetchTasks();
+            } else {
+                landing.style.display = 'flex';
+                dashboard.style.display = 'none';
             }
         }
 
-        function finishLoading() {
-            document.getElementById('loading-spinner').classList.add('hidden');
-            renderFilters();
-            renderIdeas();
-            updateStats();
+        function startGuestMode() {
+            isGuestMode = true;
+            localStorage.setItem('isGuestMode_v10', 'true');
+            checkAuth();
+            showToast("Misafir modu aktif.");
         }
 
-        // ================= GÖREV EKLEME =================
-        document.getElementById('input-text').addEventListener('input', (e) => {
-            document.getElementById('btn-add').disabled = !e.target.value.trim();
-        });
+        function logout() {
+            if(confirm("Çıkış yapmak istediğinize emin misiniz?")) {
+                currentUser = null; isGuestMode = false;
+                localStorage.removeItem('smartTaskUser_v10');
+                localStorage.removeItem('isGuestMode_v10');
+                tasks = []; checkAuth(); showToast("Çıkış yapıldı.");
+            }
+        }
 
-        document.getElementById('add-idea-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const text = document.getElementById('input-text').value;
-            const date = document.getElementById('input-date').value;
-            const catSelect = document.getElementById('input-category').value;
-            
-            // Eğer kategori boşsa (seçilmediyse) otomatiktir
-            let category = catSelect;
-            if (!category) category = categorizeIdea(text);
+        // --- TASK OPERATIONS ---
+        function handleEnter(e) { if(e.key === 'Enter') quickAddTask(); }
 
-            const newTask = {
-                id: Date.now(),
-                text: text,
-                category: category,
-                tags: ["Yeni"],
-                timestamp: new Date().toISOString(),
-                deadline: date || null,
+        async function quickAddTask() {
+            const input = document.getElementById('quick-text');
+            const dateInput = document.getElementById('quick-date');
+            if (!input.value.trim()) return showToast("Boş görev eklenemez", "error");
+
+            let deadline = dateInput.value;
+            // Basit NLP (Yarın vs)
+            if (!deadline && input.value.toLowerCase().includes('yarın')) {
+                const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(9,0,0,0);
+                deadline = new Date(d.getTime() - (d.getTimezoneOffset()*60000)).toISOString().slice(0,16);
+            }
+
+            const task = {
+                text: input.value.trim(),
+                category: autoDetectCategory(input.value),
+                deadline: deadline || null,
+                tags: [],
                 userEmail: currentUser ? currentUser.email : 'guest'
             };
 
-            saveData(newTask, 'create');
-            
-            // Reset Form
-            document.getElementById('input-text').value = '';
-            document.getElementById('input-date').value = '';
-            document.getElementById('input-category').value = ''; 
-            updateDateDisplay(document.getElementById('input-date')); // Reset UI pills
-            updateCatDisplay(document.getElementById('input-category'));
-            document.getElementById('btn-add').disabled = true;
-        });
-
-        function categorizeIdea(text) {
-            const t = text.toLowerCase();
-            if(t.match(/fiyat|tl|para|bütçe|alınacak|ödeme|fatura|banka/)) return 'Finans & Ödemeler';
-            if(t.match(/market|sipariş|kargo|alınacak/)) return 'Alışveriş';
-            if(t.match(/toplantı|mail|proje|rapor|sunum|ofis|müdür/)) return 'İş & Kariyer';
-            if(t.match(/doktor|randevu|spor|diyet|ilaç|hastane/)) return 'Sağlık & Spor';
-            if(t.match(/ders|sınav|kitap|ödev|okul/)) return 'Eğitim & Okul';
-            if(t.match(/kod|yazılım|bilgisayar|internet/)) return 'Teknoloji & Yazılım';
-            if(t.match(/tatil|bilet|otel|gezi/)) return 'Seyahat & Tatil';
-            if(t.match(/acil|önemli|kritik/)) return 'Acil & Önemli';
-            return 'Genel';
+            await saveTask(task, null); // Create new
+            input.value = ''; dateInput.value = '';
         }
 
-        // ================= KART RENDER & GRUPLAMA =================
-        function renderIdeas() {
-            const container = document.getElementById('ideas-grid');
-            const spinner = document.getElementById('loading-spinner');
-            container.innerHTML = '';
-            if(spinner) container.appendChild(spinner);
+        async function saveTask(taskData, id) {
+            // Misafir Modu (LocalStorage)
+            if (isGuestMode) {
+                if (id) {
+                    const idx = tasks.findIndex(t => t.id == id);
+                    if (idx > -1) tasks[idx] = { ...tasks[idx], ...taskData, id: id };
+                } else {
+                    taskData.id = "local_" + Date.now();
+                    taskData.timestamp = new Date().toISOString();
+                    tasks.push(taskData);
+                }
+                localStorage.setItem('guestTasks_v10', JSON.stringify(tasks));
+                renderTasks();
+                if(id) closeModal('edit-modal');
+                return true;
+            } 
+            
+            // API Modu (Backend)
+            else {
+                let res;
+                if (id) {
+                    // UPDATE: ID'yi kesinlikle gönderiyoruz
+                    taskData.id = id;
+                    res = await apiCall('update', { task: taskData });
+                } else {
+                    // CREATE
+                    res = await apiCall('create', { task: taskData });
+                }
 
-            // ARAMA FİLTRESİ
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            
-            let filtered = activeFilter === 'Tümü' ? ideas : ideas.filter(i => i.category === activeFilter);
-            
-            if(searchTerm) {
-                filtered = filtered.filter(i => i.text.toLowerCase().includes(searchTerm) || i.category.toLowerCase().includes(searchTerm));
+                if (res.status === 'success') {
+                    showToast(id ? "Güncellendi" : "Eklendi");
+                    if(id) closeModal('edit-modal');
+                    fetchTasks();
+                    return true;
+                } else {
+                    showToast("Hata: " + res.message, "error");
+                    return false;
+                }
             }
+        }
 
-            if(filtered.length === 0) {
-                container.innerHTML += `
-                    <div class="col-span-full py-16 flex flex-col items-center justify-center text-center opacity-50">
-                        <i data-lucide="clipboard-list" class="w-16 h-16 text-slate-300 mb-4"></i>
-                        <p class="text-slate-500 font-medium">Bu kriterde görev bulunmuyor.</p>
-                    </div>
-                `;
+        async function removeTask(id) {
+            if(isGuestMode) {
+                tasks = tasks.filter(t => t.id != id);
+                localStorage.setItem('guestTasks_v10', JSON.stringify(tasks));
+                renderTasks(); showToast("Silindi");
+            } else {
+                const res = await apiCall('delete', { id: id });
+                if(res.status === 'success') { fetchTasks(); showToast("Silindi"); }
+                else showToast(res.message, "error");
+            }
+        }
+
+        async function fetchTasks() {
+            if(isGuestMode) {
+                const d = localStorage.getItem('guestTasks_v10');
+                tasks = d ? JSON.parse(d) : [];
+                renderTasks();
+            } else if(currentUser) {
+                const res = await apiCall('read', {}, 'GET');
+                if(res.status === 'success') {
+                    tasks = res.data.filter(t => t.userEmail === currentUser.email);
+                    renderTasks();
+                }
+            }
+        }
+
+        // --- RENDER ---
+        function renderTasks() {
+            const grid = document.getElementById('task-grid');
+            grid.innerHTML = '';
+            
+            if (tasks.length === 0) {
+                grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:50px; color:#cbd5e1;">Görev listeniz boş.</div>`;
                 return;
             }
 
-            if (isGrouped) {
-                container.className = "flex flex-col gap-10";
-                const grouped = {};
-                filtered.forEach(task => {
-                    if(!grouped[task.category]) grouped[task.category] = [];
-                    grouped[task.category].push(task);
-                });
+            const sorted = [...tasks].sort((a,b) => {
+                if(!a.deadline) return 1; if(!b.deadline) return -1;
+                return new Date(a.deadline) - new Date(b.deadline);
+            });
 
-                Object.keys(grouped).sort().forEach(cat => {
-                    const groupSection = document.createElement('div');
-                    groupSection.className = "space-y-4 fade-in";
-                    groupSection.innerHTML = `
-                        <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
-                            <h3 class="text-lg font-bold text-slate-700">${cat}</h3>
-                            <span class="text-xs font-bold bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full">${grouped[cat].length}</span>
+            sorted.forEach(t => {
+                const isUrgent = t.deadline && (new Date(t.deadline) - new Date() < 259200000);
+                const dateStr = t.deadline ? new Date(t.deadline).toLocaleString('tr-TR', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+                
+                const card = document.createElement('div');
+                card.className = 'task-card';
+                card.onclick = () => openDetail(t.id);
+                card.innerHTML = `
+                    <div class="task-top">
+                        <span class="badge" style="background:${getCatColor(t.category)}15; color:${getCatColor(t.category)}">${t.category}</span>
+                        <button onclick="event.stopPropagation(); if(confirm('Silinsin mi?')) removeTask('${t.id}')" class="btn-icon-delete"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                    <p class="task-body">${t.text}</p>
+                    <div class="task-footer">
+                        <div class="footer-row">
+                            ${t.deadline ? `<div class="deadline ${isUrgent?'urgent':''}"><i class="fa-regular fa-clock"></i> ${dateStr}</div>` : '<div></div>'}
                         </div>
-                    `;
-                    const gridDiv = document.createElement('div');
-                    gridDiv.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
-                    grouped[cat].forEach(task => { gridDiv.appendChild(createTaskCard(task)); });
-                    groupSection.appendChild(gridDiv);
-                    container.appendChild(groupSection);
-                });
-            } else {
-                container.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6";
-                filtered.forEach(task => { container.appendChild(createTaskCard(task)); });
-            }
-
-            lucide.createIcons();
-            updateCountdowns();
-        }
-
-        function createTaskCard(task) {
-            const el = document.createElement('div');
-            el.className = "bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-300 group cursor-pointer relative overflow-hidden h-full flex flex-col";
-            el.onclick = (e) => { if(!e.target.closest('button')) openTaskModal(task.id); };
-
-            let catColor = "bg-slate-100 text-slate-600";
-            if(task.category.includes('İş')) catColor = "bg-blue-50 text-blue-600 border-blue-100";
-            if(task.category.includes('Acil')) catColor = "bg-rose-50 text-rose-600 border-rose-100";
-            if(task.category.includes('Finans')) catColor = "bg-emerald-50 text-emerald-600 border-emerald-100";
-            
-            el.innerHTML = `
-                <div class="flex justify-between items-start mb-3">
-                    <span class="px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border ${catColor}">${task.category}</span>
-                    ${task.deadline ? `<div class="countdown-badge text-xs font-bold font-mono text-slate-500 bg-slate-50 px-2 py-1 rounded flex items-center gap-1" data-deadline="${task.deadline}"><i data-lucide="clock" class="w-3 h-3"></i><span>--:--</span></div>` : ''}
-                </div>
-                <p class="text-slate-700 font-medium leading-relaxed mb-6 line-clamp-3 flex-1">${task.text}</p>
-                <div class="pt-4 border-t border-slate-50 flex justify-between items-center opacity-60 group-hover:opacity-100 transition-opacity mt-auto">
-                    <span class="text-[10px] text-slate-400">${new Date(task.timestamp).toLocaleDateString('tr-TR')}</span>
-                    <button onclick="event.stopPropagation(); deleteCurrentTask(${task.id})" class="text-slate-300 hover:text-rose-500 p-1 rounded hover:bg-rose-50 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                </div>
-            `;
-            return el;
-        }
-
-        function updateCountdowns() {
-            const elements = document.querySelectorAll('[data-deadline]');
-            const now = new Date();
-            elements.forEach(el => {
-                const deadline = new Date(el.getAttribute('data-deadline'));
-                const diff = deadline - now;
-                const span = el.querySelector('span');
-                const icon = el.querySelector('svg');
-                if (diff < 0) {
-                    el.className = "countdown-badge text-[10px] font-bold text-white bg-rose-500 px-2 py-1 rounded flex items-center gap-1 shadow-sm";
-                    span.innerText = "SÜRE DOLDU";
-                    if(icon) icon.style.display = 'none';
-                } else {
-                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                    let text = "";
-                    if (days > 0) text += `${days}g `;
-                    text += `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                    span.innerText = text;
-                }
-            });
-        }
-
-        function updateStats() {
-            document.getElementById('stats-total').innerText = ideas.length;
-        }
-
-        // ================= DETAY & DÜZENLEME MODALI =================
-        function openTaskModal(id) {
-            const task = ideas.find(t => t.id === id);
-            if(!task) return;
-            currentEditingId = id;
-            document.getElementById('edit-task-text').value = task.text;
-            document.getElementById('edit-task-category').value = task.category;
-            if(task.deadline) {
-                const d = new Date(task.deadline);
-                d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-                document.getElementById('edit-task-date').value = d.toISOString().slice(0,16);
-            } else { document.getElementById('edit-task-date').value = ''; }
-            document.getElementById('edit-task-created').innerText = new Date(task.timestamp).toLocaleString('tr-TR');
-            document.getElementById('edit-sync-status').innerText = isGuestMode ? 'Yerel Tarayıcıya' : 'Buluta';
-            const modal = document.getElementById('task-modal');
-            const content = document.getElementById('task-modal-content');
-            modal.classList.remove('hidden'); modal.classList.add('flex');
-            setTimeout(() => { content.classList.remove('scale-95', 'opacity-0'); content.classList.add('scale-100', 'opacity-100'); }, 10);
-        }
-
-        function closeTaskModal() {
-            const modal = document.getElementById('task-modal');
-            const content = document.getElementById('task-modal-content');
-            content.classList.remove('scale-100', 'opacity-100'); content.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); currentEditingId = null; }, 200);
-        }
-
-        function saveTaskEdit() {
-            if(!currentEditingId) return;
-            const originalTask = ideas.find(t => t.id === currentEditingId);
-            const updatedTask = {
-                ...originalTask,
-                text: document.getElementById('edit-task-text').value,
-                category: document.getElementById('edit-task-category').value,
-                deadline: document.getElementById('edit-task-date').value || null
-            };
-            saveData(updatedTask, 'update');
-            closeTaskModal();
-        }
-
-        function deleteCurrentTask(id = null) {
-            const targetId = id || currentEditingId;
-            if(confirm('Bu görevi silmek istediğinize emin misiniz?')) {
-                saveData({id: targetId}, 'delete');
-                if(currentEditingId) closeTaskModal();
-            }
-        }
-
-        // ================= AUTH (GÜVENLİK) =================
-        async function hashPassword(password) {
-            const msgBuffer = new TextEncoder().encode(password);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-        }
-        function generateRecoveryKey() { return 'REC-' + Math.random().toString(36).substr(2, 8).toUpperCase(); }
-
-        // API Call
-        async function apiCall(data) {
-            const res = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(data)
-            });
-            return await res.json();
-        }
-
-        // UI Handlers for Auth
-        function renderAuthSection() {
-            const el = document.getElementById('auth-section');
-            if(isGuestMode) {
-                el.innerHTML = `<button onclick="openAuthModal()" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-all flex items-center gap-2"><i data-lucide="log-in" class="w-4 h-4"></i> Giriş Yap / Kaydol</button>`;
-                document.getElementById('mode-text').innerText = "Misafir Modu";
-                document.getElementById('mode-badge-container').className = "flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600 transition-colors";
-            } else {
-                el.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold border-2 border-white shadow-sm">${currentUser.name.charAt(0)}</div>
-                        <button onclick="logout()" class="p-2 bg-white border border-slate-200 rounded-lg text-slate-400 hover:text-rose-500 hover:border-rose-200 transition-all"><i data-lucide="log-out" class="w-4 h-4"></i></button>
                     </div>
                 `;
-                document.getElementById('mode-text').innerText = "Bulut Modu";
-                document.getElementById('mode-badge-container').className = "flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-xs font-bold text-indigo-600 transition-colors";
+                grid.appendChild(card);
+            });
+        }
+
+        // --- MODAL ACTIONS ---
+        function openDetail(id) {
+            const t = tasks.find(x => x.id == id);
+            if(!t) return;
+            document.getElementById('detail-text').innerText = t.text;
+            document.getElementById('detail-category').innerText = t.category;
+            document.getElementById('detail-category').style.color = getCatColor(t.category);
+            document.getElementById('detail-tags').innerText = t.tags ? "#" + t.tags.join(' #') : '';
+            
+            document.getElementById('btn-edit-task').onclick = () => { closeModal('detail-modal'); openEditModal(t); };
+            document.getElementById('btn-delete-task').onclick = () => { if(confirm('Sil?')) removeTask(id); closeModal('detail-modal'); };
+            
+            openModal('detail-modal');
+        }
+
+        function openEditModal(t) {
+            // FIX: ID'yi hidden input'a ata
+            document.getElementById('edit-id').value = t.id;
+            document.getElementById('edit-text').value = t.text;
+            document.getElementById('edit-category').value = t.category;
+            document.getElementById('edit-tags').value = t.tags ? t.tags.join(', ') : '';
+            
+            if(t.deadline && t.deadline !== 'null') {
+                const dt = new Date(t.deadline);
+                const local = new Date(dt.getTime() - (dt.getTimezoneOffset()*60000)).toISOString().slice(0,16);
+                document.getElementById('edit-deadline').value = local;
+            } else {
+                document.getElementById('edit-deadline').value = '';
             }
-            lucide.createIcons();
+            openModal('edit-modal');
         }
 
-        function openAuthModal() { document.getElementById('auth-modal').classList.remove('hidden'); document.getElementById('auth-modal').classList.add('flex'); }
-        function closeAuthModal() { document.getElementById('auth-modal').classList.add('hidden'); document.getElementById('auth-modal').classList.remove('flex'); }
-        function switchAuthTab(tab) {
-            document.getElementById('form-login').classList.toggle('hidden', tab!=='login');
-            document.getElementById('form-register').classList.toggle('hidden', tab!=='register');
-            document.getElementById('form-forgot').classList.toggle('hidden', tab!=='forgot');
-            if(tab !== 'forgot') {
-                document.getElementById('tab-login').className = tab==='login' ? 'flex-1 py-4 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 transition-colors' : 'flex-1 py-4 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-colors';
-                document.getElementById('tab-register').className = tab==='register' ? 'flex-1 py-4 text-sm font-bold text-indigo-600 border-b-2 border-indigo-600 transition-colors' : 'flex-1 py-4 text-sm font-bold text-slate-400 border-b-2 border-transparent transition-colors';
-            }
-        }
-
-        // Auth Logic
-        async function handleLogin(e) {
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            toggleLoader(true);
-            const email = document.getElementById('login-email').value;
-            const pass = await hashPassword(document.getElementById('login-pass').value);
+            const id = document.getElementById('edit-id').value; // ID'yi al
+            const data = {
+                text: document.getElementById('edit-text').value,
+                category: document.getElementById('edit-category').value,
+                tags: document.getElementById('edit-tags').value.split(',').filter(x=>x),
+                deadline: document.getElementById('edit-deadline').value,
+                userEmail: currentUser ? currentUser.email : 'guest'
+            };
+            await saveTask(data, id); // ID ile kaydet (Update)
+        });
+
+        // --- API & UTILS ---
+        async function apiCall(action, payload, method='POST') {
+            document.getElementById('loader').style.display = 'flex';
             try {
-                const res = await apiCall({ action: 'login', email, password: pass });
-                if(res.status === 'success') {
-                    currentUser = res.user; currentUser.email = email; isGuestMode = false;
-                    closeAuthModal(); renderAuthSection(); loadData();
-                } else alert(res.message);
-            } catch(e) { alert("Bağlantı hatası."); }
-            toggleLoader(false);
+                let url = API_URL; let opts = { method: method };
+                if(method==='GET') url += `?action=${action}`;
+                else { opts.body = JSON.stringify({action, ...payload}); opts.headers = {"Content-Type":"text/plain;charset=utf-8"}; }
+                const res = await fetch(url, opts);
+                return await res.json();
+            } catch(e) { return {status:'error', message:e.toString()}; } 
+            finally { document.getElementById('loader').style.display = 'none'; }
         }
 
-        async function handleRegister(e) {
+        function autoDetectCategory(text) {
+            const l = text.toLowerCase();
+            if(l.includes('toplantı') || l.includes('mail')) return 'İş';
+            if(l.includes('market') || l.includes('ev')) return 'Kişisel';
+            if(l.includes('acil')) return 'Acil';
+            return 'Genel';
+        }
+        function getCatColor(c) {
+            if(c=='İş') return '#3b82f6'; if(c=='Acil') return '#ef4444'; if(c=='Kişisel') return '#10b981'; return '#64748b';
+        }
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function switchModal(c, o) { closeModal(c); setTimeout(() => openModal(o), 300); }
+        function showToast(m, t='success') { const el = document.createElement('div'); el.className = 'toast'; el.innerText = m; document.getElementById('toast-container').appendChild(el); setTimeout(()=>el.remove(), 3000); }
+
+        // --- AUTH FORMS ---
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            if(document.getElementById('reg-pass').value !== document.getElementById('reg-pass-confirm').value) return alert("Şifreler uyuşmuyor.");
-            toggleLoader(true);
-            const name = document.getElementById('reg-name').value;
-            const email = document.getElementById('reg-email').value;
-            const pass = await hashPassword(document.getElementById('reg-pass').value);
-            const key = generateRecoveryKey();
-            try {
-                const res = await apiCall({ action: 'register', name, email, password: pass, recoveryKey: key });
-                if(res.status === 'success') {
-                    closeAuthModal();
-                    document.getElementById('display-recovery-key').innerText = key;
-                    document.getElementById('recovery-modal').classList.remove('hidden');
-                    document.getElementById('recovery-modal').classList.add('flex');
-                } else alert(res.message);
-            } catch(e) { alert("Kayıt hatası."); }
-            toggleLoader(false);
-        }
+            if(document.getElementById('reg-pass').value !== document.getElementById('reg-pass-confirm').value) 
+                return document.getElementById('pass-match-error').style.display = 'block';
+                
+            const res = await apiCall('register', {
+                name: document.getElementById('reg-name').value,
+                email: document.getElementById('reg-email').value,
+                password: document.getElementById('reg-pass').value,
+                recoveryKey: document.getElementById('reg-key').value
+            });
+            
+            if(res.status === 'success') { 
+                alert("KAYIT BAŞARILI!\nKurtarma Anahtarınızı sakladığınızdan emin olun.");
+                closeModal('register-modal'); openModal('login-modal'); 
+            } else showToast(res.message, "error");
+        });
 
-        async function handleForgot(e) {
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            toggleLoader(true);
-            const email = document.getElementById('forgot-email').value;
-            const key = document.getElementById('forgot-key').value;
-            const pass = await hashPassword(document.getElementById('forgot-new-pass').value);
-            try {
-                const res = await apiCall({ action: 'reset_password', email, recoveryKey: key, newPassword: pass });
-                if(res.status === 'success') { alert("Şifre güncellendi."); switchAuthTab('login'); }
-                else alert(res.message);
-            } catch(e) { alert("Hata oluştu."); }
-            toggleLoader(false);
-        }
+            const res = await apiCall('login', {
+                email: document.getElementById('login-email').value,
+                password: document.getElementById('login-password').value
+            });
+            if(res.status === 'success') {
+                currentUser = res.user; isGuestMode = false;
+                localStorage.setItem('smartTaskUser_v10', JSON.stringify(currentUser));
+                closeModal('login-modal'); checkAuth();
+            } else showToast(res.message, "error");
+        });
 
-        function toggleLoader(show) {
-            const l = document.getElementById('auth-loading');
-            if(show) l.classList.remove('hidden'); else l.classList.add('hidden');
-        }
+        document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const res = await apiCall('reset_password', {
+                email: document.getElementById('forgot-email').value,
+                recoveryKey: document.getElementById('forgot-key').value,
+                newPassword: document.getElementById('forgot-new-pass').value
+            });
+            if(res.status === 'success') { showToast("Şifre Değiştirildi"); closeModal('forgot-modal'); openModal('login-modal'); }
+            else showToast(res.message, "error");
+        });
 
-        function closeRecoveryModal() {
-            document.getElementById('recovery-modal').classList.add('hidden');
-            document.getElementById('recovery-modal').classList.remove('flex');
-            openAuthModal(); switchAuthTab('login');
-        }
-        function copyRecoveryKey() {
-            navigator.clipboard.writeText(document.getElementById('display-recovery-key').innerText);
-            alert("Anahtar Kopyalandı!");
-        }
-        function logout() {
-            isGuestMode = true; currentUser = null; ideas = []; loadData(); renderAuthSection();
-        }
-
+        checkAuth();
     </script>
 </body>
 </html>
