@@ -37,13 +37,13 @@
         
         /* Modern Hap (Pill) Inputlar */
         .modern-pill {
-            @apply flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-500 rounded-xl text-sm font-medium transition-all cursor-pointer hover:border-indigo-300 hover:text-indigo-600 relative shadow-sm;
+            @apply flex items-center gap-2 px-3 py-2 bg-slate-100 text-slate-500 rounded-xl text-sm font-medium transition-all cursor-pointer hover:bg-slate-200 hover:text-indigo-600 relative shadow-sm border border-transparent;
         }
         .modern-pill.active {
             @apply bg-indigo-50 border-indigo-200 text-indigo-700;
         }
         .modern-pill select, .modern-pill input {
-            @apply absolute inset-0 opacity-0 cursor-pointer w-full h-full;
+            @apply absolute inset-0 opacity-0 cursor-pointer w-full h-full appearance-none;
         }
     </style>
 </head>
@@ -107,22 +107,25 @@
                     <!-- Sol Taraf: Seçim Araçları -->
                     <div class="flex flex-wrap items-center gap-3">
                         
-                        <!-- Tarih -->
-                        <div class="modern-pill group/date" id="date-pill">
-                            <i data-lucide="calendar" class="w-4 h-4 text-slate-400 group-hover/date:text-indigo-500"></i>
-                            <span id="date-display-text" class="hidden text-xs font-bold"></span> <!-- Seçilince görünür -->
+                        <!-- Tarih (İkon Sadece) -->
+                        <div class="modern-pill group/date" id="date-pill" title="Tarih Ekle">
+                            <i data-lucide="calendar" class="w-5 h-5 text-slate-400 group-hover/date:text-indigo-500 transition-colors"></i>
+                            <span id="date-display-text" class="hidden text-xs font-bold text-indigo-600 ml-1"></span>
                             <input type="datetime-local" id="input-date" onchange="updateDateDisplay(this)">
                         </div>
 
-                        <!-- Kategori Seçimi KALDIRILDI (Otomatik) -->
-                        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 border border-transparent text-slate-400 text-xs font-medium cursor-default">
-                            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
-                            <span>Otomatik Kategori</span>
+                        <!-- Kategori (İkon Sadece) -->
+                        <div class="modern-pill group/cat" id="cat-pill" title="Kategori Seç">
+                            <i data-lucide="tag" class="w-5 h-5 text-slate-400 group-hover/cat:text-indigo-500 transition-colors"></i>
+                            <span id="cat-display-text" class="hidden text-xs font-bold text-indigo-600 ml-1"></span>
+                            <select id="input-category" onchange="updateCatDisplay(this)">
+                                <!-- JS ile dolacak -->
+                            </select>
                         </div>
                     </div>
                     
                     <!-- Sağ Taraf: Ekle Butonu -->
-                    <button type="submit" id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-full font-bold shadow-lg shadow-indigo-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" disabled>
+                    <button type="submit" id="btn-add" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all transform hover:scale-105 active:scale-95 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none" disabled>
                         <span>Oluştur</span>
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </button>
@@ -318,7 +321,11 @@
 
         // ================= KATEGORİ & ARAYÜZ YÖNETİMİ =================
         function populateSelectOptions() {
-            // Edit Select Doldur (Sadece Modal İçin Gerekli)
+            const select = document.getElementById('input-category');
+            // Boş seçenek (Placeholder gibi)
+            select.innerHTML = '<option value="" selected disabled hidden></option>';
+            ALL_CATEGORIES.forEach(cat => { select.innerHTML += `<option value="${cat}">${cat}</option>`; });
+
             const editSelect = document.getElementById('edit-task-category');
             editSelect.innerHTML = '';
             ALL_CATEGORIES.forEach(cat => { editSelect.innerHTML += `<option value="${cat}">${cat}</option>`; });
@@ -331,6 +338,20 @@
             if(input.value) {
                 const d = new Date(input.value);
                 text.innerText = d.toLocaleDateString('tr-TR', {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+                text.classList.remove('hidden');
+                pill.classList.add('active');
+            } else {
+                text.innerText = '';
+                text.classList.add('hidden');
+                pill.classList.remove('active');
+            }
+        }
+
+        function updateCatDisplay(select) {
+            const text = document.getElementById('cat-display-text');
+            const pill = document.getElementById('cat-pill');
+            if(select.value) {
+                text.innerText = select.value;
                 text.classList.remove('hidden');
                 pill.classList.add('active');
             } else {
@@ -468,7 +489,7 @@
                 } catch (e) { 
                     console.error("Sync Error", e);
                     alert("Senkronizasyon hatası: " + (e.message || "İnternet bağlantısı yok."));
-                    loadData(); 
+                    loadData(); // Revert changes
                 }
             }
         }
@@ -489,9 +510,11 @@
             e.preventDefault();
             const text = document.getElementById('input-text').value;
             const date = document.getElementById('input-date').value;
+            const catSelect = document.getElementById('input-category').value;
             
-            // Kategori her zaman otomatiktir
-            let category = categorizeIdea(text);
+            // Eğer kategori boşsa (seçilmediyse) otomatiktir
+            let category = catSelect;
+            if (!category) category = categorizeIdea(text);
 
             const newTask = {
                 id: Date.now(),
@@ -508,7 +531,9 @@
             // Reset Form
             document.getElementById('input-text').value = '';
             document.getElementById('input-date').value = '';
+            document.getElementById('input-category').value = ''; 
             updateDateDisplay(document.getElementById('input-date')); // Reset UI pills
+            updateCatDisplay(document.getElementById('input-category'));
             document.getElementById('btn-add').disabled = true;
         });
 
