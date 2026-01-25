@@ -338,6 +338,24 @@
                         class="text-slate-500 hover:text-indigo-400 transition">Şifremi Unuttum</button>
                 </div>
 
+                <!-- KVKK Checkbox (Register Only) -->
+                <div id="kvkk-container"
+                    class="hidden flex items-start gap-3 mt-4 p-3 bg-slate-950/50 rounded-lg border border-slate-800">
+                    <div class="relative flex items-center pt-0.5">
+                        <input type="checkbox" id="kvkk-check"
+                            class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-slate-600 checked:bg-emerald-500 checked:border-emerald-500 transition-all">
+                        <i data-lucide="check"
+                            class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none"></i>
+                    </div>
+                    <label for="kvkk-check" class="text-xs text-slate-400 cursor-pointer select-none">
+                        <span class="text-slate-300 font-bold hover:underline"
+                            onclick="event.preventDefault(); openModal('kvkk-modal')">Kullanıcı Sözleşmesi'ni</span> ve
+                        <span class="text-slate-300 font-bold hover:underline"
+                            onclick="event.preventDefault(); openModal('kvkk-modal')">KVKK Aydınlatma Metni'ni</span>
+                        okudum, kabul ediyorum.
+                    </label>
+                </div>
+
                 <button type="submit" id="auth-submit-btn"
                     class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-900/20 mt-2">
                     Giriş Yap
@@ -484,6 +502,39 @@
                 <button onclick="activeFilters=[]; UIManager.renderTasks(); closeModal('filter-modal')"
                     class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-lg transition">Temizle</button>
             </div>
+        </div>
+    </div>
+
+    <!-- KVKK MODAL -->
+    <div id="kvkk-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div
+            class="bg-slate-900 border border-slate-700 w-full max-w-2xl p-8 rounded-2xl shadow-2xl relative animate-fade-in flex flex-col max-h-[80vh]">
+            <button onclick="closeModal('kvkk-modal')"
+                class="absolute top-4 right-4 text-slate-500 hover:text-white transition"><i data-lucide="x"
+                    class="w-5 h-5"></i></button>
+            <h2 class="text-2xl font-bold text-white mb-4">Kullanıcı Sözleşmesi ve KVKK</h2>
+
+            <div
+                class="flex-grow overflow-y-auto pr-2 text-slate-300 text-sm space-y-4 mb-6 leading-relaxed border border-slate-800 p-4 rounded-lg bg-slate-950/50">
+                <h3 class="text-lg font-bold text-white">1. Taraflar</h3>
+                <p>İşbu sözleşme GörevNote ("Platform") ile üye olan kullanıcı ("Kullanıcı") arasında akdedilmiştir.</p>
+
+                <h3 class="text-lg font-bold text-white">2. Kişisel Verilerin İşlenmesi (KVKK)</h3>
+                <p>6698 sayılı Kişisel Verilerin Korunması Kanunu uyarınca; adınız, soyadınız ve e-posta adresiniz,
+                    hizmetin sağlanması ve kimlik doğrulaması amacıyla işlenmektedir. Parolanız tarafımızca görülemez,
+                    sadece "Hash" (özüt) olarak saklanır.</p>
+
+                <h3 class="text-lg font-bold text-white">3. Veri Güvenliği</h3>
+                <p>Görev notlarınız sunucularımızda şifreli olarak tutulur. Şifre çözme anahtarı sadece sizin
+                    cihazınızda oluşturulur. Şifrenizi unutursanız verilerinize biz dahil kimse erişemez.</p>
+
+                <h3 class="text-lg font-bold text-white">4. Yasal Sorumluluk</h3>
+                <p>Kullanıcı, platformu yasalara aykırı amaçlarla kullanmayacağını beyan eder.</p>
+            </div>
+
+            <button onclick="closeModal('kvkk-modal')"
+                class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition">Okudum,
+                Anladım</button>
         </div>
     </div>
 
@@ -1449,6 +1500,8 @@
             const confirmInput = document.getElementById('confirm-password');
             const nameContainer = document.getElementById('fullname-container');
             const nameInput = document.getElementById('fullname');
+            const kvkkContainer = document.getElementById('kvkk-container');
+            const kvkkCheck = document.getElementById('kvkk-check');
 
             f.reset();
 
@@ -1475,6 +1528,8 @@
                 confirmInput.required = false;
                 nameContainer.classList.add('hidden');
                 nameInput.required = false;
+                kvkkContainer.classList.add('hidden');
+                kvkkCheck.checked = false;
             } else {
                 t.innerText = "Hesap Oluştur";
                 b.innerText = "Şifrele ve Kayıt Ol";
@@ -1487,6 +1542,7 @@
                 confirmInput.required = true;
                 nameContainer.classList.remove('hidden');
                 nameInput.required = true;
+                kvkkContainer.classList.remove('hidden');
             }
             lucide.createIcons();
         }
@@ -1524,7 +1580,10 @@
 
             if (u && p) {
                 if (authMode === 'register') {
-                    AuthManager.register(u, p, n || u); // Use name or fallback to username
+                    if (!document.getElementById('kvkk-check').checked) {
+                        return showToast("Lütfen Kullanıcı Sözleşmesi ve KVKK metnini onaylayın.", "error");
+                    }
+                    AuthManager.register(u, p, n || u);
                 } else {
                     AuthManager.login(u, p);
                 }
