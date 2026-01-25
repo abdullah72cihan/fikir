@@ -1,36 +1,66 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow - Güvenli Görev Yöneticisi</title>
-    
-    <!-- Tailwind CSS (Tasarım) -->
+    <title>GörevNote | Güvenli Not Defteri</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Lucide Icons (İkonlar) -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- Crypto-JS (Şifreleme Kütüphanesi - E2EE İçin Zorunlu) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    animation: { 'fade-in': 'fadeIn 0.3s ease-out', 'slide-up': 'slideUp 0.4s ease-out' },
+                    keyframes: {
+                        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+                        slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* Modern Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #0f172a; }
-        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        
-        /* Glassmorphism Efektleri */
-        .glass { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-        .modal-bg { background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); }
-        
-        /* Animasyonlar */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out forwards; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-bg {
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+        }
+
+        /* CustomScrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
     </style>
 </head>
-<body class="bg-slate-950 text-slate-200 font-sans min-h-screen selection:bg-indigo-500/30">
+
+<body class="bg-slate-950 text-slate-200 min-h-screen selection:bg-indigo-500/30">
 
     <!-- Yükleniyor Ekranı -->
     <div id="loader" class="fixed inset-0 z-[60] bg-slate-950 flex items-center justify-center hidden">
@@ -41,68 +71,86 @@
     </div>
 
     <!-- HEADER -->
-    <header class="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-800">
-        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-            <div class="flex items-center gap-3 cursor-pointer" onclick="location.reload()">
-                <div id="logo-container" class="p-2 rounded-lg bg-indigo-500/20 text-indigo-400 transition-colors">
+    <!-- Navbar -->
+    <nav class="fixed top-0 w-full glass z-40 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+            <!-- Logo -->
+            <div class="flex items-center gap-2 group cursor-pointer"
+                onclick="window.scrollTo({top:0, behavior:'smooth'})">
+                <div id="logo-container"
+                    class="p-2 rounded-xl bg-indigo-500/20 text-indigo-400 group-hover:scale-110 transition duration-300 shadow-lg shadow-indigo-500/10">
                     <i data-lucide="shield-check" class="w-6 h-6"></i>
                 </div>
-                <div>
-                    <h1 class="text-xl font-bold text-white tracking-tight">Task<span class="text-indigo-500">Flow</span></h1>
-                    <p id="mode-text" class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">GÜVENLİ MOD</p>
+                <div class="hidden md:block">
+                    <h1
+                        class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+                        GörevNote</h1>
+                    <p id="mode-text" class="text-[10px] text-slate-500 font-mono tracking-wider ml-0.5">V20.4 SECURE
+                    </p>
                 </div>
             </div>
 
-            <div id="auth-buttons" class="flex items-center gap-3">
-                <!-- JS ile doldurulacak -->
+            <!-- Right Actions -->
+            <div class="flex items-center gap-3" id="auth-buttons">
+                <!-- JS Inject -->
             </div>
         </div>
-    </header>
+    </nav>
 
     <!-- MAIN CONTENT -->
-    <main class="max-w-5xl mx-auto px-4 py-8">
-        
+    <main class="max-w-5xl mx-auto px-4 py-8 pt-24">
+
         <!-- İstatistik Kartları -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-lg">
+            <div
+                class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-lg">
                 <div>
                     <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Toplam Görev</p>
                     <p id="stat-total" class="text-2xl font-bold text-white mt-1">0</p>
                 </div>
-                <div class="p-3 bg-blue-500/10 rounded-lg text-blue-400"><i data-lucide="list-todo" class="w-6 h-6"></i></div>
+                <div class="p-3 bg-blue-500/10 rounded-lg text-blue-400"><i data-lucide="list-todo" class="w-6 h-6"></i>
+                </div>
             </div>
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-lg">
+            <div
+                class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-lg">
                 <div>
                     <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Yaklaşan</p>
                     <p id="stat-upcoming" class="text-2xl font-bold text-white mt-1">0</p>
                 </div>
-                <div class="p-3 bg-amber-500/10 rounded-lg text-amber-400"><i data-lucide="calendar-clock" class="w-6 h-6"></i></div>
+                <div class="p-3 bg-amber-500/10 rounded-lg text-amber-400"><i data-lucide="calendar-clock"
+                        class="w-6 h-6"></i></div>
             </div>
-            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-lg">
+            <div
+                class="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-lg">
                 <div>
                     <p class="text-slate-400 text-xs uppercase font-bold tracking-wider">Süresi Geçen</p>
                     <p id="stat-overdue" class="text-2xl font-bold text-slate-500 mt-1">0</p>
                 </div>
-                <div class="p-3 bg-red-500/10 rounded-lg text-red-400"><i data-lucide="alert-circle" class="w-6 h-6"></i></div>
+                <div class="p-3 bg-red-500/10 rounded-lg text-red-400"><i data-lucide="alert-circle"
+                        class="w-6 h-6"></i></div>
             </div>
         </div>
 
         <!-- Hızlı Ekleme Alanı -->
-        <section class="bg-slate-900 rounded-xl p-1 border border-slate-800 shadow-xl mb-8 relative group focus-within:border-indigo-500/50 transition-colors">
+        <section
+            class="bg-slate-900 rounded-xl p-1 border border-slate-800 shadow-xl mb-8 relative group focus-within:border-indigo-500/50 transition-colors">
             <div class="p-4">
                 <div class="flex flex-col md:flex-row gap-4">
                     <div class="flex-grow">
                         <textarea id="quick-text"
-                        class="w-full bg-transparent text-lg text-slate-200 placeholder-slate-600 resize-none outline-none min-h-[60px]"
-                        placeholder="Yeni görev ekle... (Örn: 'Yarın 14:00 Toplantı' veya 'Marketten süt al' yazarsan kategori ve tarih algılanır)"
-                        onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); quickAddTask(); }"></textarea>
+                            class="w-full bg-transparent text-lg text-slate-200 placeholder-slate-600 resize-none outline-none min-h-[60px]"
+                            placeholder="Yeni görev ekle... (Örn: 'Yarın 14:00 Toplantı' veya 'Marketten süt al' yazarsan kategori ve tarih algılanır)"
+                            onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); quickAddTask(); }"></textarea>
                     </div>
                     <div class="flex flex-col gap-2 justify-end md:w-auto w-full">
-                         <div id="date-container" class="flex items-center gap-2 px-3 py-2 rounded border border-slate-700 bg-slate-800 text-slate-400 transition-colors">
+                        <div id="date-container"
+                            class="flex items-center gap-2 px-3 py-2 rounded border border-slate-700 bg-slate-800 text-slate-400 transition-colors">
                             <i data-lucide="calendar" class="w-4 h-4"></i>
-                            <input type="datetime-local" id="quick-date" class="bg-transparent text-xs outline-none w-full md:w-auto text-slate-300 [color-scheme:dark]">
+                            <input type="datetime-local" id="quick-date"
+                                class="bg-transparent text-xs outline-none w-full md:w-auto text-slate-300 [color-scheme:dark]">
                         </div>
-                        <button onclick="quickAddTask()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-bold text-sm shadow-lg shadow-indigo-900/20 transition-all active:scale-95 flex items-center justify-center gap-2 h-10">
+                        <button onclick="quickAddTask()"
+                            class="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2 rounded-lg font-bold text-sm shadow-lg shadow-indigo-900/20 transition-all active:scale-95 flex items-center justify-center gap-2 h-10">
                             <i data-lucide="plus" class="w-4 h-4"></i> Ekle
                         </button>
                     </div>
@@ -110,26 +158,126 @@
             </div>
         </section>
 
+        <!-- SEARCH & FILTERS -->
+        <section class="mb-6 space-y-4">
+            <!-- Search Bar (Moved Here) -->
+            <div class="relative group max-w-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-lucide="search"
+                        class="w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors"></i>
+                </div>
+                <input type="text" id="search-input" placeholder="Hızlı arama..." oninput="UIManager.renderTasks()"
+                    class="block w-full pl-10 pr-3 py-2.5 bg-slate-900/50 border border-slate-800 rounded-lg text-slate-300 placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition shadow-sm text-sm">
+            </div>
+
+            <!-- Category Chips -->
+            <div id="category-filters" class="flex flex-wrap gap-2 items-center">
+                <!-- JS will fill this -->
+            </div>
+        </section>
+
+        <!-- Filtre ve Sıralama -->
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6 animate-fade-in">
+            <div class="flex items-center gap-3">
+                <div class="relative group">
+                    <select id="sort-select" onchange="UIManager.renderTasks()"
+                        class="appearance-none bg-slate-900 border border-slate-800 text-slate-300 text-sm rounded-lg pl-3 pr-9 py-2 focus:border-indigo-500 outline-none cursor-pointer hover:border-slate-700 transition">
+                        <option value="date-asc">Tarih (Yakın > Uzak)</option>
+                        <option value="date-desc">Tarih (Uzak > Yakın)</option>
+                        <option value="priority">Önem (Acil Önce)</option>
+                        <option value="az">A-Z Sırala</option>
+                    </select>
+                    <i data-lucide="arrow-up-down"
+                        class="absolute right-2.5 top-2.5 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-indigo-400 transition"></i>
+                </div>
+
+                <div class="relative group">
+                    <select id="group-select" onchange="UIManager.renderTasks()"
+                        class="appearance-none bg-slate-900 border border-slate-800 text-slate-300 text-sm rounded-lg pl-3 pr-9 py-2 focus:border-indigo-500 outline-none cursor-pointer hover:border-slate-700 transition">
+                        <option value="none">Gruplama Yok</option>
+                        <option value="category">Kategoriye Göre</option>
+                    </select>
+                    <i data-lucide="layers"
+                        class="absolute right-2.5 top-2.5 w-4 h-4 text-slate-500 pointer-events-none group-hover:text-indigo-400 transition"></i>
+                </div>
+            </div>
+            <div id="filter-info"
+                class="text-[10px] text-slate-500 font-mono border border-slate-800 px-2 py-1 rounded bg-slate-900/50">
+                Tümü Gösteriliyor
+            </div>
+        </div>
+
         <!-- Görev Listesi Grid -->
         <div id="task-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-20">
             <!-- JS ile doldurulacak -->
         </div>
 
         <!-- Boş Durum -->
-        <div id="empty-state" class="hidden col-span-full text-center py-20 border-2 border-dashed border-slate-800 rounded-xl text-slate-600">
+        <div id="empty-state"
+            class="hidden col-span-full text-center py-20 border-2 border-dashed border-slate-800 rounded-xl text-slate-600">
             <i data-lucide="layers" class="w-16 h-16 mx-auto mb-4 opacity-20"></i>
             <p class="text-lg font-medium">Listeniz tertemiz.</p>
             <p class="text-sm opacity-60">Yeni bir görev ekleyerek başlayın.</p>
         </div>
     </main>
 
+    </main>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div
+            class="bg-slate-900 border border-slate-700 w-full max-w-md p-6 rounded-2xl shadow-2xl relative animate-fade-in">
+            <button onclick="closeModal('settings-modal')"
+                class="absolute top-4 right-4 text-slate-500 hover:text-white transition"><i data-lucide="x"
+                    class="w-5 h-5"></i></button>
+            <h2 class="text-xl font-bold text-white mb-6 flex items-center gap-2"><i data-lucide="settings"
+                    class="w-6 h-6 text-indigo-500"></i> Ayarlar</h2>
+
+            <form id="settings-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Adınız</label>
+                    <input type="text" id="set-name"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition">
+                </div>
+
+                <hr class="border-slate-800 my-4">
+
+                <p class="text-xs text-amber-500 mb-2 font-bold"><i data-lucide="alert-triangle"
+                        class="w-3 h-3 inline"></i> Şifre Değiştirme (Dikkat)</p>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Mevcut Şifre</label>
+                    <input type="password" id="set-old-pass" placeholder="Şifre değişecekse zorunlu"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Yeni Şifre</label>
+                        <input type="password" id="set-new-pass"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Yeni Şifre (Tekrar)</label>
+                        <input type="password" id="set-confirm-pass"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition">
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-900/20 mt-4">Kaydet
+                    ve Güncelle</button>
+            </form>
+        </div>
+    </div>
+
     <!-- AUTH MODAL -->
     <div id="auth-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-md p-8 rounded-2xl shadow-2xl relative animate-fade-in">
-            <button onclick="closeModal('auth-modal')" class="absolute top-4 right-4 text-slate-500 hover:text-white transition">
+        <div
+            class="bg-slate-900 border border-slate-700 w-full max-w-md p-8 rounded-2xl shadow-2xl relative animate-fade-in">
+            <button onclick="closeModal('auth-modal')"
+                class="absolute top-4 right-4 text-slate-500 hover:text-white transition">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
-            
+
             <div class="text-center mb-6">
                 <div class="inline-flex p-3 bg-slate-800 rounded-full mb-4 border border-slate-700">
                     <i id="auth-icon" data-lucide="lock" class="w-8 h-8 text-indigo-500"></i>
@@ -139,16 +287,27 @@
             </div>
 
             <form id="auth-form" class="space-y-4">
-                <div>
-                    <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Kullanıcı Adı veya E-Posta</label>
-                    <input type="text" id="username" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition placeholder-slate-700">
+                <div id="fullname-container" class="hidden">
+                    <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Ad ve Soyad</label>
+                    <input type="text" id="fullname"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition placeholder-slate-700"
+                        placeholder="Örn: Ahmet Yılmaz">
                 </div>
-                
+
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Kullanıcı Adı veya
+                        E-Posta</label>
+                    <input type="text" id="username" required
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition placeholder-slate-700">
+                </div>
+
                 <div>
                     <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Şifre</label>
                     <div class="relative">
-                        <input type="password" id="password" required class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 pr-10 text-white focus:border-indigo-500 outline-none transition placeholder-slate-700">
-                        <button type="button" onclick="togglePassword('password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-indigo-400 transition">
+                        <input type="password" id="password" required
+                            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 pr-10 text-white focus:border-indigo-500 outline-none transition placeholder-slate-700">
+                        <button type="button" onclick="togglePassword('password', this)"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-indigo-400 transition">
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -158,50 +317,117 @@
                 <div id="confirm-password-container" class="hidden">
                     <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Şifreyi Doğrula</label>
                     <div class="relative">
-                        <input type="password" id="confirm-password" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 pr-10 text-white focus:border-indigo-500 outline-none transition placeholder-slate-700">
-                        <button type="button" onclick="togglePassword('confirm-password', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-indigo-400 transition">
+                        <input type="password" id="confirm-password"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 pr-10 text-white focus:border-indigo-500 outline-none transition placeholder-slate-700">
+                        <button type="button" onclick="togglePassword('confirm-password', this)"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-indigo-400 transition">
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
 
                 <div class="text-[10px] text-slate-500 mt-1 flex items-start gap-1">
-                    <i data-lucide="info" class="w-3 h-3 mt-0.5 flex-shrink-0"></i> 
-                    <span>Bu şifre, verilerinizi şifrelemek için anahtar olarak kullanılır. Unutursanız verilerinizi sadece Kurtarma Anahtarı ile açabilirsiniz.</span>
+                    <i data-lucide="info" class="w-3 h-3 mt-0.5 flex-shrink-0"></i>
+                    <span>Bu şifre, verilerinizi şifrelemek için anahtar olarak kullanılır. Unutursanız verilerinizi
+                        sadece Kurtarma Anahtarı ile açabilirsiniz.</span>
                 </div>
-                
-                <button type="submit" id="auth-submit-btn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-900/20 mt-2">
+
+                <div class="flex justify-between items-center mt-4 text-sm">
+                    <button type="button"
+                        onclick="loadGuestTasksIfAny(); closeModal('auth-modal'); openModal('reset-modal')"
+                        class="text-slate-500 hover:text-indigo-400 transition">Şifremi Unuttum</button>
+                </div>
+
+                <button type="submit" id="auth-submit-btn"
+                    class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-900/20 mt-2">
                     Giriş Yap
                 </button>
             </form>
-            
+
             <div class="mt-6 pt-6 border-t border-slate-800 text-center">
-                <button id="toggle-auth-mode" class="text-sm text-indigo-400 hover:text-indigo-300 font-medium transition">
+                <button id="toggle-auth-mode"
+                    class="text-sm text-indigo-400 hover:text-indigo-300 font-medium transition">
                     Hesabın yok mu? Hesap Oluştur
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- RESET PASSWORD MODAL -->
+    <div id="reset-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div
+            class="bg-slate-900 border border-slate-700 w-full max-w-md p-8 rounded-2xl shadow-2xl relative animate-fade-in">
+            <button onclick="closeModal('reset-modal')"
+                class="absolute top-4 right-4 text-slate-500 hover:text-white transition">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <div class="inline-flex p-3 bg-slate-800 rounded-full mb-4 border border-slate-700">
+                    <i data-lucide="key-round" class="w-8 h-8 text-amber-500"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-white">Şifre Sıfırlama</h2>
+                <p class="text-slate-400 text-sm mt-2">Kurtarma anahtarınızı kullanarak şifrenizi yenileyin.</p>
+            </div>
+
+            <form id="reset-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-500 mb-1">E-Posta</label>
+                    <input type="text" id="reset-email" required
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-amber-500 outline-none transition placeholder-slate-700">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Kurtarma Anahtarı (Recovery
+                        Key)</label>
+                    <input type="text" id="reset-key" required placeholder="RK-XXXX-XXXX"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-amber-500 outline-none transition placeholder-slate-700">
+                </div>
+                <div>
+                    <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Yeni Şifre</label>
+                    <div class="relative">
+                        <input type="password" id="reset-password" required
+                            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 pr-10 text-white focus:border-amber-500 outline-none transition placeholder-slate-700">
+                        <button type="button" onclick="togglePassword('reset-password', this)"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-amber-400 transition">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <button type="submit"
+                    class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-amber-900/20 mt-2">
+                    Şifreyi Güncelle
+                </button>
+            </form>
+        </div>
+    </div>
+
     <!-- RECOVERY KEY MODAL -->
     <div id="key-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-md p-8 rounded-2xl shadow-2xl text-center animate-fade-in">
-            <div class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
+        <div
+            class="bg-slate-900 border border-slate-700 w-full max-w-md p-8 rounded-2xl shadow-2xl text-center animate-fade-in">
+            <div
+                class="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20">
                 <i data-lucide="check" class="w-8 h-8 text-emerald-500"></i>
             </div>
             <h2 class="text-2xl font-bold text-white mb-2">Hesap Oluşturuldu!</h2>
             <p class="text-slate-400 text-sm mb-6">
-                Şifrenizi unutursanız verilerinizi kurtarmanın <strong>TEK</strong> yolu bu anahtardır. Lütfen güvenli bir yere kaydedin.
+                Şifrenizi unutursanız verilerinizi kurtarmanın <strong>TEK</strong> yolu bu anahtardır. Lütfen güvenli
+                bir yere kaydedin.
             </p>
-            
-            <div class="bg-slate-950 border border-dashed border-slate-700 p-4 rounded-lg mb-6 relative group cursor-pointer" onclick="copyKey()">
-                <code id="generated-key" class="text-emerald-400 font-mono text-lg font-bold tracking-wider select-all">RK-XXXX-XXXX</code>
-                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition rounded-lg">
+
+            <div class="bg-slate-950 border border-dashed border-slate-700 p-4 rounded-lg mb-6 relative group cursor-pointer"
+                onclick="copyKey()">
+                <code id="generated-key"
+                    class="text-emerald-400 font-mono text-lg font-bold tracking-wider select-all">RK-XXXX-XXXX</code>
+                <div
+                    class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition rounded-lg">
                     <span class="text-xs text-white font-bold">Kopyalamak için tıkla</span>
                 </div>
             </div>
-            
-            <button onclick="closeModal('key-modal'); openAuthModal('login')" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition">
+
+            <button onclick="closeModal('key-modal'); openAuthModal('login')"
+                class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition">
                 Anahtarı Kaydettim, Giriş Yap
             </button>
         </div>
@@ -209,56 +435,94 @@
 
     <!-- DETAIL MODAL -->
     <div id="detail-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-md p-6 rounded-2xl shadow-2xl relative animate-fade-in flex flex-col gap-4">
-            <button onclick="closeModal('detail-modal')" class="absolute top-4 right-4 text-slate-500 hover:text-white transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-            
+        <div
+            class="bg-slate-900 border border-slate-700 w-full max-w-md p-6 rounded-2xl shadow-2xl relative animate-fade-in flex flex-col gap-4">
+            <button onclick="closeModal('detail-modal')"
+                class="absolute top-4 right-4 text-slate-500 hover:text-white transition"><i data-lucide="x"
+                    class="w-5 h-5"></i></button>
+
             <div class="flex items-center gap-2 mb-2">
-                 <span id="detail-category" class="text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-wider flex items-center gap-1.5"></span>
-                 <span id="detail-date" class="text-xs text-slate-400 flex items-center gap-1 font-mono"></span>
+                <span id="detail-category"
+                    class="text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-wider flex items-center gap-1.5"></span>
+                <span id="detail-date" class="text-xs text-slate-400 flex items-center gap-1 font-mono"></span>
             </div>
 
             <p id="detail-text" class="text-slate-200 text-lg whitespace-pre-wrap leading-relaxed font-medium"></p>
 
-            <div id="detail-countdown" class="hidden bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-center">
-                 <span id="detail-countdown-val" class="text-xl font-bold font-mono"></span>
-                 <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Kalan Süre</p>
+            <div id="detail-countdown"
+                class="hidden bg-slate-950/50 p-4 rounded-xl border border-slate-800 text-center">
+                <span id="detail-countdown-val" class="text-xl font-bold font-mono"></span>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Kalan Süre</p>
             </div>
 
             <div class="grid grid-cols-2 gap-3 mt-2">
-                <button onclick="openEditModalFromDetail()" class="bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-indigo-900/20 transition">Düzenle</button>
-                <button onclick="deleteTaskFromDetail()" class="bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/30 py-2.5 rounded-lg font-bold text-sm transition">Sil</button>
+                <button onclick="openEditModalFromDetail()"
+                    class="bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-lg font-bold text-sm shadow-lg shadow-indigo-900/20 transition">Düzenle</button>
+                <button onclick="deleteTaskFromDetail()"
+                    class="bg-red-900/20 hover:bg-red-900/40 text-red-400 border border-red-900/30 py-2.5 rounded-lg font-bold text-sm transition">Sil</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILTER MODAL -->
+    <div id="filter-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
+        <div
+            class="bg-slate-900 border border-slate-700 w-full max-w-sm p-6 rounded-2xl shadow-2xl relative animate-fade-in">
+            <button onclick="closeModal('filter-modal')"
+                class="absolute top-4 right-4 text-slate-500 hover:text-white transition"><i data-lucide="x"
+                    class="w-5 h-5"></i></button>
+            <h2 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i data-lucide="filter"
+                    class="w-5 h-5 text-indigo-500"></i> Kategorileri Filtrele</h2>
+
+            <div id="filter-options" class="space-y-2 max-h-[300px] overflow-y-auto mb-6 pr-2">
+                <!-- JS Fill -->
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="applyFilters()"
+                    class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-lg transition">Uygula</button>
+                <button onclick="activeFilters=[]; UIManager.renderTasks(); closeModal('filter-modal')"
+                    class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-lg transition">Temizle</button>
             </div>
         </div>
     </div>
 
     <!-- EDIT MODAL -->
     <div id="edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-bg">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-md p-6 rounded-2xl shadow-2xl relative animate-fade-in">
-             <button onclick="closeModal('edit-modal')" class="absolute top-4 right-4 text-slate-500 hover:text-white transition"><i data-lucide="x" class="w-5 h-5"></i></button>
-             <h2 class="text-xl font-bold text-white mb-4">Görevi Düzenle</h2>
-             
-             <form id="edit-form" class="flex flex-col gap-4">
-                 <input type="hidden" id="edit-id">
-                 <div>
+        <div
+            class="bg-slate-900 border border-slate-700 w-full max-w-md p-6 rounded-2xl shadow-2xl relative animate-fade-in">
+            <button onclick="closeModal('edit-modal')"
+                class="absolute top-4 right-4 text-slate-500 hover:text-white transition"><i data-lucide="x"
+                    class="w-5 h-5"></i></button>
+            <h2 class="text-xl font-bold text-white mb-4">Görevi Düzenle</h2>
+
+            <form id="edit-form" class="flex flex-col gap-4">
+                <input type="hidden" id="edit-id">
+                <div>
                     <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Görev Tanımı</label>
-                    <textarea id="edit-text" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition min-h-[100px]"></textarea>
-                 </div>
-                 
-                 <div class="grid grid-cols-2 gap-4">
-                     <div>
+                    <textarea id="edit-text"
+                        class="w-full bg-slate-950 border border-slate-800 rounded-lg p-3 text-white focus:border-indigo-500 outline-none transition min-h-[100px]"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
                         <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Kategori</label>
-                        <select id="edit-category" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white focus:border-indigo-500 outline-none">
+                        <select id="edit-category"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white focus:border-indigo-500 outline-none">
                             <!-- JS ile doldurulacak -->
                         </select>
-                     </div>
-                     <div>
+                    </div>
+                    <div>
                         <label class="block text-xs uppercase font-bold text-slate-500 mb-1">Tarih</label>
-                        <input type="datetime-local" id="edit-date" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white focus:border-indigo-500 outline-none [color-scheme:dark]">
-                     </div>
-                 </div>
+                        <input type="datetime-local" id="edit-date"
+                            class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white focus:border-indigo-500 outline-none [color-scheme:dark]">
+                    </div>
+                </div>
 
-                 <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-900/20 mt-2">Kaydet ve Güncelle</button>
-             </form>
+                <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-900/20 mt-2">Kaydet
+                    ve Güncelle</button>
+            </form>
         </div>
     </div>
 
@@ -269,24 +533,94 @@
     <script>
         // --- GENİŞLETİLMİŞ KATEGORİ AYARLARI ---
         const CATEGORIES = {
-            IS: { id: 'is', label: 'İş', color: 'text-blue-400 border-blue-500/20 bg-blue-500/10', icon: 'briefcase' },
-            ACIL: { id: 'acil', label: 'Acil', color: 'text-red-400 border-red-500/20 bg-red-500/10', icon: 'alert-triangle' },
-            KISISEL: { id: 'kisisel', label: 'Kişisel', color: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10', icon: 'user' },
-            EGITIM: { id: 'egitim', label: 'Eğitim', color: 'text-amber-400 border-amber-500/20 bg-amber-500/10', icon: 'graduation-cap' },
-            SAGLIK: { id: 'saglik', label: 'Sağlık', color: 'text-pink-400 border-pink-500/20 bg-pink-500/10', icon: 'heart-pulse' },
-            ALISVERIS: { id: 'alisveris', label: 'Alışveriş', color: 'text-purple-400 border-purple-500/20 bg-purple-500/10', icon: 'shopping-cart' },
-            FINANS: { id: 'finans', label: 'Finans', color: 'text-green-400 border-green-500/20 bg-green-500/10', icon: 'dollar-sign' },
-            SEYAHAT: { id: 'seyahat', label: 'Seyahat', color: 'text-cyan-400 border-cyan-500/20 bg-cyan-500/10', icon: 'plane' },
-            FIKIR: { id: 'fikir', label: 'Fikir', color: 'text-yellow-400 border-yellow-500/20 bg-yellow-500/10', icon: 'lightbulb' },
-            GENEL: { id: 'genel', label: 'Genel', color: 'text-slate-400 border-slate-500/20 bg-slate-500/10', icon: 'layers' }
+            IS: { id: 'is', label: 'İş', color: 'text-blue-400 border-blue-500/20 bg-blue-500/10', icon: 'briefcase', keywords: ['toplantı', 'mail', 'rapor', 'sunum', 'proje', 'müşteri', 'ofis', 'yönetim', 'deadline'] },
+            ACIL: { id: 'acil', label: 'Acil', color: 'text-red-400 border-red-500/20 bg-red-500/10', icon: 'alert-triangle', keywords: ['acil', 'önemli', 'kritik', 'hemen', 'şimdi', 'dikkat', '112', 'alarm'] },
+            KISISEL: { id: 'kisisel', label: 'Kişisel', color: 'text-emerald-400 border-emerald-500/20 bg-emerald-500/10', icon: 'user', keywords: ['spor', 'su', 'uyku', 'bakım', 'berber', 'duş', 'günlük'] },
+            EGITIM: { id: 'egitim', label: 'Eğitim', color: 'text-amber-400 border-amber-500/20 bg-amber-500/10', icon: 'graduation-cap', keywords: ['ders', 'sınav', 'okul', 'ödev', 'kitap', 'not', 'çalış', 'öğren', 'kurs'] },
+            SAGLIK: { id: 'saglik', label: 'Sağlık', color: 'text-pink-400 border-pink-500/20 bg-pink-500/10', icon: 'heart-pulse', keywords: ['doktor', 'ilaç', 'hastane', 'randevu', 'dişçi', 'ağrı', 'vitamin'] },
+            ALISVERIS: { id: 'alisveris', label: 'Alışveriş', color: 'text-purple-400 border-purple-500/20 bg-purple-500/10', icon: 'shopping-cart', keywords: ['al', 'sipariş', 'kargo', 'fiyat', 'indirim', 'mağaza'] },
+            FINANS: { id: 'finans', label: 'Finans', color: 'text-green-400 border-green-500/20 bg-green-500/10', icon: 'dollar-sign', keywords: ['para', 'banka', 'ödeme', 'fatura', 'borç', 'maaş', 'kredi', 'iban'] },
+            SEYAHAT: { id: 'seyahat', label: 'Seyahat', color: 'text-cyan-400 border-cyan-500/20 bg-cyan-500/10', icon: 'plane', keywords: ['uçak', 'bilet', 'otel', 'tatil', 'gezi', 'yol', 'bavul', 'rezervasyon'] },
+            FIKIR: { id: 'fikir', label: 'Fikir', color: 'text-yellow-400 border-yellow-500/20 bg-yellow-500/10', icon: 'lightbulb', keywords: ['fikir', 'aklıma', 'tasarım', 'ilham', 'buldum', 'yaratıcı'] },
+            MARKET: { id: 'market', label: 'Market', color: 'text-orange-400 border-orange-500/20 bg-orange-500/10', icon: 'shopping-basket', keywords: ['market', 'süt', 'ekmek', 'yumurta', 'peynir', 'sebze', 'meyve', 'kg', 'adet'] },
+            EV: { id: 'ev', label: 'Ev', color: 'text-indigo-400 border-indigo-500/20 bg-indigo-500/10', icon: 'home', keywords: ['ev', 'tamir', 'temizlik', 'kira', 'aidat', 'mutfak', 'banyo', 'çamaşır'] },
+            TEKNOLOJI: { id: 'teknoloji', label: 'Teknoloji', color: 'text-sky-400 border-sky-500/20 bg-sky-500/10', icon: 'cpu', keywords: ['kod', 'server', 'laptop', 'telefon', 'format', 'yazılım', 'bug', 'linux'] },
+            SOSYAL: { id: 'sosyal', label: 'Sosyal', color: 'text-rose-400 border-rose-500/20 bg-rose-500/10', icon: 'coffee', keywords: ['buluşma', 'kahve', 'sinema', 'etkinlik', 'arkadaş', 'sohbet', 'parti'] },
+            GENEL: { id: 'genel', label: 'Genel', color: 'text-slate-400 border-slate-500/20 bg-slate-500/10', icon: 'layers', keywords: [] }
         };
 
-        let currentUser = null; 
+        function classifyTask(text) {
+            const lower = text.toLowerCase();
+            for (const cat of Object.values(CATEGORIES)) {
+                if (cat.keywords && cat.keywords.some(k => lower.includes(k))) return cat.label;
+            }
+            return 'Genel';
+        }
+
+        let currentUser = null;
         let tasks = [];
         let isGuest = false;
         let authMode = 'login';
         let detailInterval = null;
         let currentDetailId = null;
+        let activeFilters = []; // Multi-Filter State (Array)
+
+        const API_URL = "https://script.google.com/macros/s/AKfycby0-w2jhs8wafr8TOvoB5xCRUG4bdBqmNQ9Sh2vX9BxllK8R3GwGIK1rm5lJHAeZ9RH/exec";
+
+        // Helper to set SINGLE filter (Clicking Chips directly)
+        function setCategoryFilter(catLabel) {
+            if (activeFilters.length === 1 && activeFilters[0] === catLabel) {
+                activeFilters = []; // Toggle off if same clicked
+            } else {
+                activeFilters = [catLabel]; // Reset others, select this one (Quick Mode)
+            }
+            UIManager.renderTasks();
+        }
+
+        function openFilterModal() {
+            const container = document.getElementById('filter-options');
+            container.innerHTML = '';
+
+            // Get all used categories + predefined
+            const used = new Set(tasks.map(t => t.category || 'Genel'));
+            // Merge with CATEGORIES to ensure correct order/colors
+
+            Object.values(CATEGORIES).forEach(cat => {
+                const label = cat.label;
+                const isChecked = activeFilters.includes(label) ? 'checked' : '';
+
+                // Only show if used? Or all? Let's show All to allow discovery.
+                // Better: Show All available in CATEGORIES.
+
+                const div = document.createElement('div');
+                div.className = "flex items-center gap-3 p-3 rounded-lg bg-slate-950/50 border border-slate-800 hover:border-slate-600 cursor-pointer transition";
+                div.onclick = (e) => {
+                    const cb = div.querySelector('input');
+                    if (e.target !== cb) cb.checked = !cb.checked;
+                };
+
+                div.innerHTML = `
+                    <div class="relative flex items-center">
+                      <input type="checkbox" value="${label}" ${isChecked} class="peer h-5 w-5 cursor-pointer appearance-none rounded border border-slate-600 checked:bg-indigo-500 checked:border-indigo-500 transition-all">
+                      <i data-lucide="check" class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none"></i>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="${cat.icon}" class="w-4 h-4 ${cat.color.split(' ')[0]}"></i>
+                        <span class="text-slate-300 font-medium">${label}</span>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+            lucide.createIcons();
+            openModal('filter-modal');
+        }
+
+        function applyFilters() {
+            const cbs = document.querySelectorAll('#filter-options input:checked');
+            activeFilters = Array.from(cbs).map(cb => cb.value);
+            UIManager.renderTasks();
+            closeModal('filter-modal');
+        }
 
         // --- KRİPTOGRAFİ MOTORU ---
         const CryptoManager = {
@@ -295,10 +629,48 @@
             decrypt: (ciphertext, key) => { try { return JSON.parse(CryptoJS.AES.decrypt(ciphertext, key).toString(CryptoJS.enc.Utf8)); } catch (e) { return null; } }
         };
 
+        // --- API YÖNETİCİSİ ---
+        const APIManager = {
+            post: async (action, data = {}) => {
+                if (!API_URL) return { status: "error", message: "API URL tanımlı değil." };
+
+                // Auth Token Enjeksiyonu
+                if (currentUser && currentUser.authToken) {
+                    data.email = currentUser.username;
+                    data.authToken = currentUser.authToken;
+                }
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: "POST",
+                        mode: "cors", // CORS önemli
+                        headers: { "Content-Type": "text/plain;charset=utf-8" }, // Apps Script text/plain sever
+                        body: JSON.stringify({ action: action, ...data })
+                    });
+                    const resJson = await response.json();
+                    return resJson;
+                } catch (e) {
+                    console.error("API Error:", e);
+                    return { status: "error", message: "Sunucu bağlantı hatası." };
+                }
+            },
+            // GET Artık kullanılmıyor (Setup hariç) ama geriye uyumluluk için dursun
+            get: async (action) => {
+                if (!API_URL) return { status: "error", message: "API URL tanımlı değil." };
+                try {
+                    const response = await fetch(`${API_URL}?action=${action}`);
+                    return await response.json();
+                } catch (e) { return { status: "error", message: "Bağlantı hatası." }; }
+            }
+        };
+
         // --- VERİ YÖNETİMİ ---
         const DataManager = {
             init: async () => {
-                // Kategori Seçeneklerini Doldur (Edit Modal İçin)
+                // BACKEND VERSION CHECK
+                await DataManager.checkApiVersion();
+
+                // Kategori Seçeneklerini Doldur
                 const select = document.getElementById('edit-category');
                 select.innerHTML = '';
                 Object.values(CATEGORIES).forEach(cat => {
@@ -310,7 +682,7 @@
 
                 const session = sessionStorage.getItem('tf_session');
                 const guest = localStorage.getItem('tf_guest');
-                
+
                 if (session) {
                     currentUser = JSON.parse(session);
                     await DataManager.loadTasks();
@@ -323,87 +695,236 @@
                 UIManager.updateStats();
             },
 
-            loadTasks: async () => {
-                if(isGuest) return;
-                showLoader(true);
-                const cloudData = localStorage.getItem(`db_${currentUser.username}`);
-                if (cloudData) {
-                    const decrypted = CryptoManager.decrypt(cloudData, currentUser.key);
-                    tasks = decrypted || [];
-                    if(!decrypted) showToast("Veri şifresi çözülemedi!", "error");
-                } else tasks = [];
-                showLoader(false);
+            checkApiVersion: async () => {
+                if (!API_URL) return;
+                try {
+                    const res = await APIManager.get("version");
+                    if (res && res.version === "v20") {
+                        console.log("Verified Backend: v20");
+                        document.getElementById('generated-key').innerText = "";
+                    } else {
+                        console.error("Version Mismatch.", res);
+                        let msg = "⚠️ UYARI: Backend Güncel Değil!";
+                        if (res && res.message === "Use POST") {
+                            msg += "\n(Önceki kod çalışıyor)";
+                        }
+                        msg += "\n\nÇözüm:\n1. Google Apps Script -> Deploy -> Manage Deployments\n2. 'Edit' kalemine tıkla.\n3. Version: 'New Version' seç.\n4. Deploy'a bas.\n\nEğer URL değişirse HTML dosyasındaki API_URL'i güncelleyin.";
+                        alert(msg);
+                    }
+                } catch (e) { console.error("Ver check fail", e); }
             },
 
-            saveTasks: async () => {
-                if (isGuest) {
-                    localStorage.setItem('tf_local_tasks', JSON.stringify(tasks));
-                } else if (currentUser) {
-                    const encrypted = CryptoManager.encrypt(tasks, currentUser.key);
-                    localStorage.setItem(`db_${currentUser.username}`, encrypted);
+            loadTasks: async () => {
+                if (isGuest) return;
+
+                showLoader(true);
+                // GÜVENLİK GÜNCELLEMESİ: GET yerine POST kullanıyoruz (AuthToken için)
+                const res = await APIManager.post("read");
+                showLoader(false);
+
+                if (res.status === "success") {
+                    // Sadece bu kullanıcıya ait görevleri filtrele ve şifresini çöz
+                    // Backend zaten filtreliyor ama çift dikiş gitmekte zarar yok.
+                    tasks = res.data
+                        .map(t => {
+                            let decryptedText = t.text;
+                            // Eğer şifreli gibiyse çözmeyi dene (basit bir kontrol veya try-catch)
+                            // Not: Mevcut backend yapısında encrypted flag yok, o yüzden her zaman deneyelim.
+                            const decrypted = CryptoManager.decrypt(t.text, currentUser.key);
+                            if (decrypted) decryptedText = decrypted;
+
+                            return { ...t, text: decryptedText };
+                        });
+                    UIManager.renderTasks();
+                    UIManager.updateStats();
+                } else {
+                    showToast("Veriler yüklenemedi: " + res.message, "error");
                 }
-                UIManager.renderTasks();
-                UIManager.updateStats();
+            },
+
+            addTask: async (task) => {
+                if (isGuest) {
+                    tasks.unshift({ ...task, id: Math.random().toString(36).substr(2, 9), createdAt: new Date().toISOString() });
+                    localStorage.setItem('tf_local_tasks', JSON.stringify(tasks));
+                    UIManager.renderTasks(); UIManager.updateStats();
+                    return true;
+                }
+
+                showLoader(true);
+                const encryptedText = CryptoManager.encrypt(task.text, currentUser.key);
+                const payload = {
+                    text: encryptedText,
+                    category: task.category,
+                    tags: [], // Şimdilik boş
+                    deadline: task.deadline,
+                    userEmail: currentUser.username
+                };
+
+                const res = await APIManager.post("create", { task: payload });
+                showLoader(false);
+
+                if (res.status === "success") {
+                    // Local state güncelle
+                    tasks.unshift({ ...task, id: res.newId, createdAt: new Date().toISOString() });
+                    UIManager.renderTasks(); UIManager.updateStats();
+                    return true;
+                } else {
+                    showToast(res.message, "error");
+                    return false;
+                }
+            },
+
+            updateTask: async (task) => {
+                if (isGuest) {
+                    const idx = tasks.findIndex(t => t.id === task.id);
+                    if (idx > -1) {
+                        tasks[idx] = { ...tasks[idx], ...task };
+                        localStorage.setItem('tf_local_tasks', JSON.stringify(tasks));
+                    }
+                    UIManager.renderTasks(); UIManager.updateStats();
+                    return true;
+                }
+
+                showLoader(true);
+                const encryptedText = CryptoManager.encrypt(task.text, currentUser.key);
+                // ID string olmalı (güvenlik için String() içine alıyoruz)
+                const payload = {
+                    id: String(task.id),
+                    text: encryptedText,
+                    category: task.category,
+                    tags: task.tags || [],
+                    deadline: task.deadline
+                };
+
+                const res = await APIManager.post("update", { task: payload });
+                showLoader(false);
+
+                if (res.status === "success") {
+                    const idx = tasks.findIndex(t => t.id === task.id);
+                    // Local state'i de güncelle (şifresiz haliyle)
+                    if (idx > -1) { tasks[idx] = { ...tasks[idx], ...task }; }
+                    UIManager.renderTasks(); UIManager.updateStats();
+                    return true;
+                } else {
+                    console.error("Update failed:", res);
+                    showToast("Güncelleme başarısız: " + res.message, "error");
+                    return false;
+                }
+            },
+
+            deleteTask: async (id) => {
+                if (isGuest) {
+                    tasks = tasks.filter(t => t.id !== id);
+                    localStorage.setItem('tf_local_tasks', JSON.stringify(tasks));
+                    UIManager.renderTasks(); UIManager.updateStats();
+                    return true;
+                }
+
+                showLoader(true);
+                const res = await APIManager.post("delete", { id: id });
+                showLoader(false);
+
+                if (res.status === "success") {
+                    tasks = tasks.filter(t => t.id !== id);
+                    UIManager.renderTasks(); UIManager.updateStats();
+                    return true;
+                } else {
+                    showToast(res.message, "error");
+                    return false;
+                }
             }
         };
 
         // --- AUTH İŞLEMLERİ ---
         const AuthManager = {
-            register: (username, password) => {
-                // Şifre Doğrulama
+            register: async (username, password, fullname) => {
                 const confirmPass = document.getElementById('confirm-password').value.trim();
-                if (password !== confirmPass) {
-                    return showToast("Şifreler birbiriyle uyuşmuyor.", "error");
-                }
+                if (password !== confirmPass) return showToast("Şifreler birbiriyle uyuşmuyor.", "error");
 
-                if(localStorage.getItem(`user_salt_${username}`)) return showToast("Bu kullanıcı adı/e-posta alınmış.", "error");
-                const salt = Math.random().toString(36).substring(2);
-                const recoveryKey = `RK-${Math.random().toString(36).substr(2,4).toUpperCase()}-${Math.random().toString(36).substr(2,4).toUpperCase()}`;
-                localStorage.setItem(`user_salt_${username}`, salt);
-                
-                const guestTasks = JSON.parse(localStorage.getItem('tf_local_tasks') || '[]');
-                const derivedKey = CryptoManager.deriveKey(password, salt);
-                currentUser = { username, key: derivedKey };
-                sessionStorage.setItem('tf_session', JSON.stringify(currentUser));
-                
-                tasks = guestTasks;
-                DataManager.saveTasks();
-                isGuest = false;
-                localStorage.removeItem('tf_guest');
-                localStorage.removeItem('tf_local_tasks');
-                
-                closeModal('auth-modal');
-                document.getElementById('generated-key').innerText = recoveryKey;
-                openModal('key-modal');
-                UIManager.updateAuthUI();
+                showLoader(true);
+                // FRONTEND HASHING: Şifrenin kendisini asla göndermiyoruz. SHA256 ile hashliyoruz.
+                const hashedPassword = CryptoJS.SHA256(password).toString();
+
+                const res = await APIManager.post("register", { name: fullname || username, email: username, password: hashedPassword });
+                showLoader(false);
+
+                if (res.status === "success") {
+                    // Eğer backendden key gelmediyse uyarı ver (Deployment hatası olabilir)
+                    const keyDisplay = res.recoveryKey || "HATA: Script Güncellenmeli!";
+                    document.getElementById('generated-key').innerText = keyDisplay;
+
+                    if (!res.recoveryKey) showToast("Kurtarma anahtarı alınamadı. Lütfen Google Script'i YENİ SÜRÜM olarak yayınlayın.", "error");
+
+                    // Otomatik giriş yap (orijinal şifre ile key türetmek gerek)
+                    await AuthManager.login(username, password);
+                    openModal('key-modal');
+                } else {
+                    showToast(res.message, "error");
+                }
             },
 
-            login: (username, password) => {
-                const salt = localStorage.getItem(`user_salt_${username}`);
-                if (!salt) return showToast("Kullanıcı bulunamadı.", "error");
+            login: async (username, password) => {
+                showLoader(true);
+                // FRONTEND HASHING
+                const hashedPassword = CryptoJS.SHA256(password).toString();
 
-                const derivedKey = CryptoManager.deriveKey(password, salt);
-                const cloudData = localStorage.getItem(`db_${username}`);
-                let success = true;
+                const res = await APIManager.post("login", { email: username, password: hashedPassword });
+                showLoader(false);
 
-                if (cloudData && CryptoManager.decrypt(cloudData, derivedKey) === null) success = false;
-                
-                if (success) {
-                    currentUser = { username, key: derivedKey };
+                if (res.status === "success") {
+                    // Encryption Key için ORİJİNAL şifreyi kullanıyoruz (türevi değil)
+                    const derivedKey = CryptoManager.deriveKey(password, username);
+                    // AuthToken olarak hashed password'ü sakla
+                    currentUser = { username: res.user.email, name: res.user.name, key: derivedKey, authToken: hashedPassword };
                     sessionStorage.setItem('tf_session', JSON.stringify(currentUser));
-                    
-                    const guestTasks = JSON.parse(localStorage.getItem('tf_local_tasks') || '[]');
-                    if(guestTasks.length > 0 && confirm("Misafir notlarını bu hesaba aktarmak ister misin?")) {
-                        tasks = [...guestTasks]; 
-                    }
-                    localStorage.removeItem('tf_local_tasks');
-                    localStorage.removeItem('tf_guest');
-                    isGuest = false;
 
-                    DataManager.loadTasks();
+                    // MİSAFİR GÖREVLERİNİ SENKRONİZE ET
+                    const guestTasks = JSON.parse(localStorage.getItem('tf_local_tasks') || '[]');
+                    if (guestTasks.length > 0) {
+                        if (confirm(`Misafir modunda ${guestTasks.length} notunuz var. Bunları hesabınıza aktarmak ister misiniz?`)) {
+                            showLoader(true);
+                            // Sırayla ekle
+                            for (const t of guestTasks) {
+                                // ID'si yeni oluşacak, sadece içerik önemli
+                                await DataManager.addTask({ text: t.text, category: t.category, deadline: t.deadline });
+                            }
+                            showLoader(false);
+                            showToast("Misafir notları aktarıldı.", "success");
+                        }
+                        localStorage.removeItem('tf_local_tasks');
+                    }
+
+                    isGuest = false;
+                    localStorage.removeItem('tf_guest');
                     closeModal('auth-modal');
-                    showToast("Giriş başarılı.", "success");
-                } else showToast("Hatalı şifre.", "error");
+
+                    await DataManager.loadTasks();
+                    UIManager.updateAuthUI();
+                    showToast(res.message, "success");
+                } else {
+                    showToast(res.message, "error");
+                }
+            },
+
+            resetPassword: async (email, key, newDetails) => {
+                showLoader(true);
+                // Yeni şifreyi de hashleyip gönderiyoruz
+                const hashedNewPassword = CryptoJS.SHA256(newDetails).toString();
+
+                const res = await APIManager.post("reset_password", {
+                    email: email,
+                    recoveryKey: key,
+                    newPassword: hashedNewPassword
+                });
+                showLoader(false);
+
+                if (res.status === "success") {
+                    closeModal('reset-modal');
+                    showToast("Şifreniz başarıyla sıfırlandı. Giriş yapabilirsiniz.", "success");
+                    openAuthModal('login');
+                } else {
+                    showToast(res.message, "error");
+                }
             },
 
             logout: () => {
@@ -412,8 +933,112 @@
                 currentUser = null; isGuest = false; tasks = [];
                 UIManager.updateAuthUI(); UIManager.renderTasks(); UIManager.updateStats();
                 showToast("Çıkış yapıldı.", "success");
+            },
+
+            updateProfile: async (newName, oldPass, newPass) => {
+                showLoader(true);
+
+                try {
+                    const payload = { newName: newName };
+                    let nextAuthToken = currentUser.authToken;
+                    let nextKey = currentUser.key;
+
+                    // Şifre Değişimi Varsa
+                    if (newPass) {
+                        if (!oldPass) throw new Error("Mevcut şifrenizi girmelisiniz.");
+
+                        // 1. Check Old Password locally
+                        const hashedOld = CryptoJS.SHA256(oldPass).toString();
+                        if (hashedOld !== currentUser.authToken) throw new Error("Mevcut şifre yanlış.");
+
+                        // 2. Prepare New Credentials
+                        const hashedNew = CryptoJS.SHA256(newPass).toString();
+                        const newKey = CryptoManager.deriveKey(newPass, currentUser.username);
+
+                        // 3. Re-encrypt ALL tasks locally
+                        const reEncryptedTasks = tasks.map(t => {
+                            // Raw data is already in 'tasks' (decrypted). Just need to encrypt with new key.
+                            // But wait, 'DataManager.addTask' handles encryption. Here we need to produce the encrypted payload manually or use a helper.
+                            // DataManager.updateTask sends encrypted data. We need to construct the raw 'task' object but set up for batch save.
+                            // Actually, 'tasks' array has DECRYPTED data (text is readable).
+                            // We need to form the payload that APIManager sends.
+                            const encryptedText = CryptoManager.encrypt(t.text, newKey);
+                            const encryptedCat = CryptoManager.encrypt(t.category, newKey);
+
+                            return {
+                                id: t.id,
+                                text: encryptedText,
+                                category: encryptedCat,
+                                tags: t.tags, // Tags are not encrypted currently in usage? Let's assume tags are public or encrypted differently. In current code tags are just passed.
+                                deadline: t.deadline
+                            };
+                        });
+
+                        payload.newPasswordHash = hashedNew;
+                        payload.tasks = reEncryptedTasks; // For batch update
+
+                        nextAuthToken = hashedNew;
+                        nextKey = newKey;
+                    }
+
+                    // 4. Send Update to Server (Atomic if possible, or Profile then Batch)
+                    // If we send tasks in 'update_profile', backend handles it safely.
+                    // Let's use 'update_profile' for user props and 'batch_update' for tasks to keep logic clean?
+                    // NO, 'implementation_plan' said atomic is better but size limit.
+                    // Let's try sending everything in 'update_profile' first? No, we implemented 'batch_update' separately in backend.
+
+                    // Step A: Update Profile (User/Pass)
+                    const resProfile = await APIManager.post("update_profile", payload);
+                    if (resProfile.status !== "success") throw new Error(resProfile.message);
+
+                    // Update Local Session IMMEDIATELY (Critical to not lose access)
+                    const oldUser = { ...currentUser };
+                    currentUser.name = newName;
+                    currentUser.authToken = nextAuthToken;
+                    currentUser.key = nextKey;
+                    sessionStorage.setItem('tf_session', JSON.stringify(currentUser));
+
+                    // Step B: If Password Changed -> Batch Update Tasks
+                    if (newPass) {
+                        // We need to send 'batch_update' interacting with the NEW auth token.
+                        // APIManager uses 'currentUser' which we just updated. Perfect.
+                        const resBatch = await APIManager.post("batch_update", { tasks: payload.tasks });
+
+                        if (resBatch.status !== "success") {
+                            // CRITICAL ERROR: Password changed, but data not written.
+                            // User has new password, but server has old encrypted data (unreadable).
+                            // We must retry or warn.
+                            alert("Kritik Uyarı: Şifreniz değişti ama veriler sunucuya yazılamadı. Lütfen sayfayı kapatmayın ve tekrar deneyin.");
+                            throw new Error("Veri senkronizasyonu başarısız. " + resBatch.message);
+                        }
+                    }
+
+                    showLoader(false);
+                    closeModal('settings-modal');
+                    UIManager.updateAuthUI();
+                    showToast("Profil güncellendi!", "success");
+                    document.getElementById('settings-form').reset();
+
+                } catch (e) {
+                    showLoader(false);
+                    showToast(e.message, "error");
+                    console.error(e);
+                }
             }
         };
+
+        // --- EVENTS ---
+        document.getElementById('settings-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('set-name').value.trim();
+            const oldPass = document.getElementById('set-old-pass').value;
+            const newPass = document.getElementById('set-new-pass').value;
+            const confirmPass = document.getElementById('set-confirm-pass').value;
+
+            if (newPass && newPass !== confirmPass) return showToast("Yeni şifreler uyuşmuyor.", "error");
+
+            AuthManager.updateProfile(name, oldPass, newPass);
+        });
 
         // --- UI YÖNETİMİ ---
         const UIManager = {
@@ -421,14 +1046,16 @@
                 const container = document.getElementById('auth-buttons');
                 const modeText = document.getElementById('mode-text');
                 const logoContainer = document.getElementById('logo-container');
-                
+
                 // İKON ELEMANINI SIFIRLA VE YENİDEN OLUŞTUR
                 if (currentUser) {
                     modeText.textContent = "ŞİFRELİ KASA AKTİF";
                     modeText.className = "text-[10px] text-emerald-500 uppercase font-bold animate-pulse";
                     logoContainer.className = "p-2 rounded-lg bg-emerald-500/20 text-emerald-400";
                     logoContainer.innerHTML = '<i data-lucide="shield-check" class="w-6 h-6"></i>'; // DOĞRUDAN HTML SET ET
-                    container.innerHTML = `<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700"><i data-lucide="user" class="w-4 h-4 text-emerald-400"></i><span class="text-xs text-slate-300 max-w-[100px] truncate">${currentUser.username}</span></div><button onclick="AuthManager.logout()" class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition"><i data-lucide="log-out" class="w-5 h-5"></i></button>`;
+                    container.innerHTML = `<div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700"><i data-lucide="user" class="w-4 h-4 text-emerald-400"></i><span class="text-xs text-slate-300 max-w-[100px] truncate">${currentUser.username}</span></div>
+                    <button onclick="openModal('settings-modal'); document.getElementById('set-name').value = currentUser.name || '';" class="p-2 text-slate-400 hover:text-indigo-400 hover:bg-indigo-950/30 rounded-lg transition" title="Ayarlar"><i data-lucide="settings" class="w-5 h-5"></i></button>
+                    <button onclick="AuthManager.logout()" class="p-2 text-slate-400 hover:text-red-400 hover:bg-red-950/30 rounded-lg transition" title="Çıkış"><i data-lucide="log-out" class="w-5 h-5"></i></button>`;
                 } else if (isGuest) {
                     modeText.textContent = "YEREL MİSAFİR MODU";
                     modeText.className = "text-[10px] text-amber-500 uppercase font-bold";
@@ -445,42 +1072,176 @@
             renderTasks: () => {
                 const grid = document.getElementById('task-grid');
                 grid.innerHTML = '';
-                if (tasks.length === 0) return document.getElementById('empty-state').classList.remove('hidden');
-                document.getElementById('empty-state').classList.add('hidden');
 
-                const sorted = [...tasks].sort((a,b) => {
-                    if(!a.deadline) return 1; if(!b.deadline) return -1;
-                    return new Date(a.deadline) - new Date(b.deadline);
+                // 0. GENERATE CATEGORY CHIPS
+                const chipContainer = document.getElementById('category-filters');
+                if (chipContainer) {
+                    const counts = {};
+                    tasks.forEach(t => {
+                        const c = t.category || 'Genel';
+                        counts[c] = (counts[c] || 0) + 1;
+                    });
+
+                    let chipsHTML = '';
+
+                    // Filter Icon (Multi-Select Trigger)
+                    const isMultiActive = activeFilters.length > 1;
+                    const filterBtnClass = isMultiActive ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-white';
+
+                    chipsHTML += `<button onclick="openFilterModal()" class="border p-1.5 rounded-full transition flex items-center justify-center mr-2 ${filterBtnClass}" title="Gelişmiş Filtreleme">
+                        <i data-lucide="list-filter" class="w-4 h-4"></i>
+                    </button>`;
+
+                    // 'All' Chip
+                    const allActive = activeFilters.length === 0 ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-indigo-500 hover:text-indigo-400';
+                    chipsHTML += `<button onclick="activeFilters=[]; UIManager.renderTasks()" class="border px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-2 ${allActive}">Tümü <span class="bg-white/10 px-1.5 rounded-full">${tasks.length}</span></button>`;
+
+                    Object.keys(counts).sort().forEach(catLabel => {
+                        const catConfig = Object.values(CATEGORIES).find(c => c.label === catLabel) || CATEGORIES.GENEL;
+                        const isActive = activeFilters.includes(catLabel); // Multi-select check
+
+                        const simpleActive = isActive ? 'bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-500/20' : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-indigo-500/50 hover:text-indigo-400';
+
+                        chipsHTML += `<button onclick="setCategoryFilter('${catLabel}')" class="border px-3 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-2 ${simpleActive}">
+                            <i data-lucide="${catConfig.icon}" class="w-3 h-3"></i> ${catLabel} <span class="bg-white/10 px-1.5 rounded-full">${counts[catLabel]}</span>
+                         </button>`;
+                    });
+                    chipContainer.innerHTML = chipsHTML;
+                    lucide.createIcons();
+                }
+
+                // FILTER: Search
+                const searchInput = document.getElementById('search-input');
+                const searchTerm = searchInput ? searchInput.value.toLowerCase() : "";
+
+                let filtered = tasks.filter(t => {
+                    // 1. Category Filter (Multi Logic)
+                    if (activeFilters.length > 0 && !activeFilters.includes(t.category || 'Genel')) return false;
+
+                    // 2. Search Filter
+                    if (!searchTerm) return true;
+                    return t.text.toLowerCase().includes(searchTerm) || (t.category && t.category.toLowerCase().includes(searchTerm));
                 });
 
-                sorted.forEach(task => {
+                // FILTER: Sort
+                const sortMode = document.getElementById('sort-select') ? document.getElementById('sort-select').value : 'date-asc';
+                const groupMode = document.getElementById('group-select') ? document.getElementById('group-select').value : 'none';
+
+                if (filtered.length === 0) {
+                    let msg = "";
+                    if (activeFilters.length > 0) msg += `"${activeFilters.join(', ')}" kategorilerinde `;
+                    if (searchTerm) msg += `"${searchTerm}" araması için `;
+                    msg += "sonuç bulunamadı.";
+
+                    if (activeFilters.length === 0 && !searchTerm && tasks.length === 0) {
+                        document.getElementById('empty-state').classList.remove('hidden');
+                    } else {
+                        grid.innerHTML = `<div class="col-span-full text-center py-10 text-slate-500 border border-dashed border-slate-800 rounded-xl">${msg}</div>`;
+                        document.getElementById('empty-state').classList.add('hidden');
+                    }
+                    return;
+                }
+                document.getElementById('empty-state').classList.add('hidden');
+
+                let sorted = [...filtered].sort((a, b) => {
+                    // Completed tasks always at bottom
+                    const isDoneA = (a.tags && a.tags.includes('completed')) ? 1 : 0;
+                    const isDoneB = (b.tags && b.tags.includes('completed')) ? 1 : 0;
+                    if (isDoneA !== isDoneB) return isDoneA - isDoneB;
+
+                    if (sortMode === 'date-desc') {
+                        if (!a.deadline) return 1; if (!b.deadline) return -1;
+                        return new Date(b.deadline) - new Date(a.deadline);
+                    }
+                    if (sortMode === 'date-asc') {
+                        if (!a.deadline) return 1; if (!b.deadline) return -1;
+                        return new Date(a.deadline) - new Date(b.deadline);
+                    }
+                    if (sortMode === 'priority') {
+                        const priorities = { 'Acil': 0, 'İş': 1, 'Eğitim': 2 };
+                        const pA = priorities[a.category] !== undefined ? priorities[a.category] : 99;
+                        const pB = priorities[b.category] !== undefined ? priorities[b.category] : 99;
+                        return pA - pB;
+                    }
+                    if (sortMode === 'az') return a.text.localeCompare(b.text);
+                    return 0;
+                });
+
+                // Helper to render a single card (DRY)
+                const createCard = (task) => {
                     const cat = Object.values(CATEGORIES).find(c => c.label === task.category) || CATEGORIES.GENEL;
                     const timeLeft = getTimeLeft(task.deadline);
-                    let timerHTML = '', borderClass = 'border-slate-800 hover:border-indigo-500/30';
-                    
-                    if (task.deadline) {
+                    const isCompleted = task.tags && task.tags.includes('completed');
+
+                    let timerHTML = '', borderClass = isCompleted ? 'border-slate-800' : 'border-slate-800 hover:border-indigo-500/30';
+                    let bgClass = isCompleted ? 'bg-slate-900/30' : 'bg-slate-900/50';
+                    let textClass = isCompleted ? 'text-slate-500 line-through' : 'text-slate-300';
+
+                    if (task.deadline && !isCompleted) {
                         if (timeLeft.expired) {
                             timerHTML = `<div class="mt-auto pt-3 border-t border-slate-800 text-xs text-red-400 font-bold flex gap-2"><i data-lucide="alert-circle" class="w-4 h-4"></i> SÜRE DOLDU</div>`;
                             borderClass = 'border-red-900/30 hover:border-red-500/50';
                         } else {
-                            timerHTML = `<div class="mt-auto pt-3 border-t border-slate-800 text-xs text-slate-400 flex gap-2"><i data-lucide="timer" class="w-4 h-4 text-indigo-400"></i> ${timeLeft.d>0?timeLeft.d+'g ':''}${timeLeft.h}sa ${timeLeft.m}dk</div>`;
+                            timerHTML = `<div class="mt-auto pt-3 border-t border-slate-800 text-xs text-slate-400 flex gap-2"><i data-lucide="timer" class="w-4 h-4 text-indigo-400"></i> ${timeLeft.d > 0 ? timeLeft.d + 'g ' : ''}${timeLeft.h}sa ${timeLeft.m}dk</div>`;
                         }
                     }
 
                     const div = document.createElement('div');
-                    div.className = `bg-slate-900/50 border ${borderClass} rounded-xl p-5 flex flex-col group relative transition-all hover:-translate-y-1 shadow-lg cursor-pointer`;
-                    div.onclick = (e) => { if(!e.target.closest('button')) openDetail(task.id); };
+                    div.className = `${bgClass} border ${borderClass} rounded-xl p-5 flex flex-col group relative transition-all hover:-translate-y-1 shadow-lg cursor-pointer ${isCompleted ? 'opacity-60' : ''}`;
+                    div.onclick = (e) => { if (!e.target.closest('button')) openDetail(task.id); };
+
+                    const checkBtnIcon = isCompleted ? 'check-circle-2' : 'circle';
+                    const checkBtnColor = isCompleted ? 'text-emerald-500' : 'text-slate-600 group-hover:text-indigo-400';
+
                     div.innerHTML = `
-                        <div class="flex justify-between items-start mb-3">
-                            <span class="text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-wider flex items-center gap-1.5 ${cat.color}"><i data-lucide="${cat.icon}" class="w-3 h-3"></i> ${cat.label}</span>
-                            <button onclick="event.stopPropagation(); deleteTask('${task.id}')" class="p-1.5 hover:bg-red-900/20 rounded text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                        <p class="text-slate-300 text-sm whitespace-pre-wrap mb-4 font-medium line-clamp-3">${task.text}</p>
-                        ${timerHTML}
-                    `;
-                    grid.appendChild(div);
-                });
+                         <div class="flex justify-between items-start mb-3">
+                             <span class="text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-wider flex items-center gap-1.5 ${cat.color}"><i data-lucide="${cat.icon}" class="w-3 h-3"></i> ${cat.label}</span>
+                             <div class="flex items-center gap-2">
+                                <button onclick="event.stopPropagation(); toggleComplete('${task.id}')" class="p-1.5 rounded transition ${checkBtnColor}"><i data-lucide="${checkBtnIcon}" class="w-5 h-5"></i></button>
+                                <span class="text-[10px] text-slate-600 font-mono" title="Oluşturulma Tarihi">${new Date(task.timestamp || task.createdAt || Date.now()).toLocaleDateString('tr-TR')}</span>
+                                <button onclick="event.stopPropagation(); deleteTask('${task.id}')" class="p-1.5 hover:bg-red-900/20 rounded text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                             </div>
+                         </div>
+                         <p class="${textClass} text-sm whitespace-pre-wrap mb-4 font-medium line-clamp-3 transition-all">${task.text}</p>
+                         ${isCompleted ? '<div class="mt-auto pt-3 border-t border-slate-800 text-xs text-emerald-500 font-bold flex gap-2"><i data-lucide="check-circle" class="w-4 h-4"></i> TAMAMLANDI</div>' : timerHTML}
+                     `;
+                    return div;
+                };
+
+                // 2. GRUPLAMA (GROUPING)
+                if (groupMode === 'category') {
+                    grid.className = "flex flex-col gap-8 pb-20";
+
+                    const groups = {};
+                    sorted.forEach(t => {
+                        const c = t.category || 'Genel';
+                        if (!groups[c]) groups[c] = [];
+                        groups[c].push(t);
+                    });
+
+                    Object.keys(groups).sort().forEach(catLabel => {
+                        const catConfig = Object.values(CATEGORIES).find(c => c.label === catLabel) || CATEGORIES.GENEL;
+                        const groupSection = document.createElement('div');
+                        groupSection.innerHTML = `
+                            <div class="flex items-center gap-3 mb-3 border-b border-slate-800 pb-2">
+                                <div class="p-1.5 rounded bg-slate-800 text-slate-400"><i data-lucide="${catConfig.icon}" class="w-4 h-4"></i></div>
+                                <h3 class="text-slate-300 font-bold text-sm uppercase tracking-wider">${catLabel} (${groups[catLabel].length})</h3>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 group-grid"></div>
+                        `;
+                        const subGrid = groupSection.querySelector('.group-grid');
+                        groups[catLabel].forEach(task => subGrid.appendChild(createCard(task)));
+                        grid.appendChild(groupSection);
+                    });
+
+                } else {
+                    // NO GROUPING
+                    grid.className = "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-20";
+                    sorted.forEach(task => grid.appendChild(createCard(task)));
+                }
+
                 lucide.createIcons();
+                if (document.getElementById('filter-info')) document.getElementById('filter-info').innerText = `${tasks.length} Görev / ${sortMode === 'priority' ? 'Önem' : (sortMode === 'az' ? 'A-Z' : 'Tarih')} Sıralı`;
             },
 
             updateStats: () => {
@@ -499,35 +1260,35 @@
         function openDetail(id) {
             currentDetailId = id;
             const task = tasks.find(t => t.id === id);
-            if(!task) return;
+            if (!task) return;
 
             const cat = Object.values(CATEGORIES).find(c => c.label === task.category) || CATEGORIES.GENEL;
-            
+
             // Populate Modal
             const catEl = document.getElementById('detail-category');
             catEl.className = `text-[10px] font-bold px-2 py-1 rounded border uppercase tracking-wider flex items-center gap-1.5 ${cat.color}`;
             catEl.innerHTML = `<i data-lucide="${cat.icon}" class="w-3 h-3"></i> ${cat.label}`;
-            
+
             document.getElementById('detail-text').innerText = task.text;
-            
+
             const dateEl = document.getElementById('detail-date');
             const countEl = document.getElementById('detail-countdown');
             const countVal = document.getElementById('detail-countdown-val');
-            
-            if(detailInterval) clearInterval(detailInterval);
 
-            if(task.deadline) {
+            if (detailInterval) clearInterval(detailInterval);
+
+            if (task.deadline) {
                 const dDate = new Date(task.deadline);
                 dateEl.innerHTML = `<i data-lucide="calendar" class="w-3 h-3"></i> ${dDate.toLocaleString('tr-TR', { dateStyle: 'medium', timeStyle: 'short' })}`;
                 countEl.classList.remove('hidden');
-                
+
                 const tick = () => {
                     const tl = getTimeLeft(task.deadline);
-                    if(tl.expired) {
+                    if (tl.expired) {
                         countVal.innerText = "SÜRE DOLDU";
                         countVal.className = "text-xl font-bold font-mono text-red-500";
                     } else {
-                        countVal.innerText = `${tl.d > 0 ? tl.d + ' Gün ' : ''}${String(tl.h).padStart(2,'0')}:${String(tl.m).padStart(2,'0')}:${String(tl.s||0).padStart(2,'0')}`;
+                        countVal.innerText = `${tl.d > 0 ? tl.d + ' Gün ' : ''}${String(tl.h).padStart(2, '0')}:${String(tl.m).padStart(2, '0')}:${String(tl.s || 0).padStart(2, '0')}`;
                         countVal.className = "text-xl font-bold font-mono text-indigo-400";
                     }
                 };
@@ -545,45 +1306,56 @@
         function openEditModalFromDetail() {
             closeModal('detail-modal');
             const task = tasks.find(t => t.id === currentDetailId);
-            if(!task) return;
+            if (!task) return;
 
             document.getElementById('edit-id').value = task.id;
             document.getElementById('edit-text').value = task.text;
             document.getElementById('edit-category').value = task.category;
             document.getElementById('edit-date').value = task.deadline || '';
-            
+
             openModal('edit-modal');
         }
 
-        document.getElementById('edit-form').addEventListener('submit', (e) => {
+        document.getElementById('edit-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit-id').value;
             const text = document.getElementById('edit-text').value.trim();
             const cat = document.getElementById('edit-category').value;
             const date = document.getElementById('edit-date').value;
 
-            const idx = tasks.findIndex(t => t.id === id);
-            if(idx > -1) {
-                tasks[idx] = { ...tasks[idx], text, category: cat, deadline: date || null };
-                DataManager.saveTasks();
+            const success = await DataManager.updateTask({ id, text, category: cat, deadline: date || null });
+            if (success) {
                 closeModal('edit-modal');
                 showToast("Görev güncellendi.", "success");
             }
         });
 
-        function deleteTaskFromDetail() {
-            if(confirm("Silmek istediğine emin misin?")) {
-                tasks = tasks.filter(t => t.id !== currentDetailId);
-                DataManager.saveTasks();
-                closeModal('detail-modal');
-                showToast("Görev silindi.", "success");
+        async function deleteTaskFromDetail() {
+            if (confirm("Silmek istediğine emin misin?")) {
+                const success = await DataManager.deleteTask(currentDetailId);
+                if (success) {
+                    closeModal('detail-modal');
+                    showToast("Görev silindi.", "success");
+                }
             }
+        }
+
+        document.getElementById('reset-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('reset-email').value.trim().toLowerCase();
+            const key = document.getElementById('reset-key').value.trim();
+            const newPass = document.getElementById('reset-password').value;
+            AuthManager.resetPassword(email, key, newPass);
+        });
+
+        function loadGuestTasksIfAny() {
+            // Helper to not lose guest tasks if switching modes
         }
 
         // --- İŞLEM FONKSİYONLARI ---
         function startGuest() { isGuest = true; localStorage.setItem('tf_guest', 'true'); DataManager.init(); }
 
-        function quickAddTask() {
+        async function quickAddTask() {
             if (!currentUser && !isGuest) {
                 showToast("Lütfen önce giriş yapın veya misafir moduna geçin.", "error");
                 openAuthModal('login');
@@ -595,36 +1367,55 @@
             const text = input.value.trim();
             if (!text) return showToast("Boş görev eklenemez.", "error");
 
-            let category = 'Genel', deadline = dateInput.value;
+            let category = classifyTask(text);
+            let deadline = dateInput.value;
             const lower = text.toLowerCase();
-            
-            // Genişletilmiş Otomatik Kategori Algılama
-            if (lower.match(/toplantı|mail|rapor|sunum|proje/)) category = 'İş';
-            else if (lower.match(/acil|önemli|kritik|hemen/)) category = 'Acil';
-            else if (lower.match(/spor|su|uyku|kişisel/)) category = 'Kişisel';
-            else if (lower.match(/ders|sınav|okul|ödev|kitap/)) category = 'Eğitim';
-            else if (lower.match(/doktor|ilaç|hastane|randevu|dişçi/)) category = 'Sağlık';
-            else if (lower.match(/market|al|süt|ekmek|fiyat|indirim|sipariş/)) category = 'Alışveriş';
-            else if (lower.match(/para|banka|ödeme|fatura|borç|maaş/)) category = 'Finans';
-            else if (lower.match(/uçak|bilet|otel|tatil|gezi|yol/)) category = 'Seyahat';
-            else if (lower.match(/fikir|aklıma|tasarım|ilham|buldum/)) category = 'Fikir';
 
             if (!deadline && lower.includes('yarın')) {
-                const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(9,0,0,0);
-                deadline = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0,16);
+                const d = new Date(); d.setDate(d.getDate() + 1); d.setHours(9, 0, 0, 0);
+                deadline = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
             }
 
-            tasks.unshift({ id: Math.random().toString(36).substr(2, 9), text, category, deadline: deadline || null, createdAt: new Date().toISOString() });
-            DataManager.saveTasks();
-            input.value = ''; dateInput.value = '';
-            showToast("Görev eklendi.", "success");
+            const success = await DataManager.addTask({ text, category, deadline: deadline || null });
+            if (success) {
+                input.value = ''; dateInput.value = '';
+                showToast("Görev eklendi.", "success");
+            }
         }
 
-        function deleteTask(id) {
-            if(confirm("Silmek istediğine emin misin?")) {
-                tasks = tasks.filter(t => t.id !== id);
-                DataManager.saveTasks();
-                showToast("Görev silindi.", "success");
+        async function toggleComplete(id) {
+            const task = tasks.find(t => t.id === id);
+            if (!task) return;
+
+            // Toggle 'completed' tag
+            let newTags = task.tags || [];
+            if (newTags.includes('completed')) {
+                newTags = newTags.filter(t => t !== 'completed');
+            } else {
+                newTags.push('completed');
+            }
+
+            // Optimistic UI Update
+            task.tags = newTags;
+            UIManager.renderTasks();
+
+            const success = await DataManager.updateTask({ ...task, tags: newTags });
+            if (!success) {
+                // Revert if failed
+                if (newTags.includes('completed')) task.tags = task.tags.filter(t => t !== 'completed');
+                else task.tags.push('completed');
+                UIManager.renderTasks();
+            } else {
+                if (newTags.includes('completed')) showToast("Görev tamamlandı!", "success");
+            }
+        }
+
+        async function deleteTask(id) {
+            if (confirm("Silmek istediğine emin misin?")) {
+                const success = await DataManager.deleteTask(id);
+                if (success) {
+                    showToast("Görev silindi.", "success");
+                }
             }
         }
 
@@ -633,20 +1424,20 @@
             if (!d) return null;
             const diff = new Date(d) - new Date();
             if (diff <= 0) return { expired: true };
-            return { d: Math.floor(diff/86400000), h: Math.floor((diff/3600000)%24), m: Math.floor((diff/60000)%60), s: Math.floor((diff/1000)%60), expired: false };
+            return { d: Math.floor(diff / 86400000), h: Math.floor((diff / 3600000) % 24), m: Math.floor((diff / 60000) % 60), s: Math.floor((diff / 1000) % 60), expired: false };
         }
-        function openModal(id) { 
-            document.getElementById(id).classList.remove('hidden'); 
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
             document.getElementById(id).classList.add('flex');
-            if(id === 'auth-modal') switchAuthMode(authMode);
+            if (id === 'auth-modal') switchAuthMode(authMode);
         }
-        function closeModal(id) { 
-            document.getElementById(id).classList.add('hidden'); 
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
             document.getElementById(id).classList.remove('flex');
-            if(id === 'detail-modal' && detailInterval) clearInterval(detailInterval);
+            if (id === 'detail-modal' && detailInterval) clearInterval(detailInterval);
         }
         function openAuthModal(mode) { authMode = mode; openModal('auth-modal'); }
-        
+
         function switchAuthMode(mode) {
             authMode = mode;
             const t = document.getElementById('modal-title');
@@ -656,9 +1447,11 @@
             const currentIcon = document.getElementById('auth-icon');
             const confContainer = document.getElementById('confirm-password-container');
             const confirmInput = document.getElementById('confirm-password');
+            const nameContainer = document.getElementById('fullname-container');
+            const nameInput = document.getElementById('fullname');
 
             f.reset();
-            
+
             // Helper to replace icon
             const replaceIcon = (iconName, colorClass) => {
                 const newIcon = document.createElement('i');
@@ -670,33 +1463,37 @@
                 }
             };
 
-            if (mode === 'login') { 
-                t.innerText = "Giriş Yap"; 
-                b.innerText = "Giriş Yap"; 
-                b.className = "w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-900/20 mt-2"; 
-                tg.innerText = "Hesabın yok mu? Hesap Oluştur"; 
-                
+            if (mode === 'login') {
+                t.innerText = "Giriş Yap";
+                b.innerText = "Giriş Yap";
+                b.className = "w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-indigo-900/20 mt-2";
+                tg.innerText = "Hesabın yok mu? Hesap Oluştur";
+
                 replaceIcon('lock', 'text-indigo-500');
-                
+
                 confContainer.classList.add('hidden');
                 confirmInput.required = false;
-            } else { 
-                t.innerText = "Hesap Oluştur"; 
-                b.innerText = "Şifrele ve Kayıt Ol"; 
-                b.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-emerald-900/20 mt-2"; 
-                tg.innerText = "Giriş Yap"; 
-                
+                nameContainer.classList.add('hidden');
+                nameInput.required = false;
+            } else {
+                t.innerText = "Hesap Oluştur";
+                b.innerText = "Şifrele ve Kayıt Ol";
+                b.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition shadow-lg shadow-emerald-900/20 mt-2";
+                tg.innerText = "Giriş Yap";
+
                 replaceIcon('shield', 'text-emerald-500');
-                
+
                 confContainer.classList.remove('hidden');
                 confirmInput.required = true;
+                nameContainer.classList.remove('hidden');
+                nameInput.required = true;
             }
             lucide.createIcons();
         }
 
         function togglePassword(inputId, btn) {
             const input = document.getElementById(inputId);
-            
+
             if (input.type === "password") {
                 input.type = "text";
                 btn.innerHTML = '<i data-lucide="eye-off" class="w-4 h-4"></i>';
@@ -707,30 +1504,39 @@
             lucide.createIcons();
         }
 
-        function showToast(m, t='info') {
+        function showToast(m, t = 'info') {
             const c = document.getElementById('toast-container'), el = document.createElement('div');
-            const cl = t==='error'?'bg-red-900/80 text-red-100 border-red-500/50':t==='success'?'bg-emerald-900/80 text-emerald-100 border-emerald-500/50':'bg-slate-800 text-white border-slate-700';
+            const cl = t === 'error' ? 'bg-red-900/80 text-red-100 border-red-500/50' : t === 'success' ? 'bg-emerald-900/80 text-emerald-100 border-emerald-500/50' : 'bg-slate-800 text-white border-slate-700';
             el.className = `${cl} border px-4 py-3 rounded-lg shadow-xl backdrop-blur-md flex items-center gap-3 text-sm font-medium animate-fade-in min-w-[300px]`;
-            el.innerHTML = `<i data-lucide="${t==='error'?'alert-octagon':'check-circle-2'}" class="w-4 h-4"></i> ${m}`;
+            el.innerHTML = `<i data-lucide="${t === 'error' ? 'alert-octagon' : 'check-circle-2'}" class="w-4 h-4"></i> ${m}`;
             c.appendChild(el); lucide.createIcons();
-            setTimeout(() => { el.style.opacity='0'; setTimeout(()=>el.remove(),300); }, 3000);
+            setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 3000);
         }
         function showLoader(s) { document.getElementById('loader').classList.toggle('hidden', !s); }
         function copyKey() { navigator.clipboard.writeText(document.getElementById('generated-key').innerText); showToast("Kopyalandı!", "success"); }
 
-        document.getElementById('toggle-auth-mode').addEventListener('click', () => switchAuthMode(authMode==='login'?'register':'login'));
-        document.getElementById('auth-form').addEventListener('submit', (e) => { 
-            e.preventDefault(); 
+        document.getElementById('toggle-auth-mode').addEventListener('click', () => switchAuthMode(authMode === 'login' ? 'register' : 'login'));
+        document.getElementById('auth-form').addEventListener('submit', (e) => {
+            e.preventDefault();
             const u = document.getElementById('username').value.trim();
-            const p = document.getElementById('password').value.trim(); 
-            if(u && p) authMode === 'register' ? AuthManager.register(u, p) : AuthManager.login(u, p); 
+            const p = document.getElementById('password').value.trim();
+            const n = document.getElementById('fullname').value.trim();
+
+            if (u && p) {
+                if (authMode === 'register') {
+                    AuthManager.register(u, p, n || u); // Use name or fallback to username
+                } else {
+                    AuthManager.login(u, p);
+                }
+            }
         });
-        
+
         const di = document.getElementById('quick-date'), dc = document.getElementById('date-container');
         di.addEventListener('change', () => dc.className = di.value ? "flex items-center gap-2 px-3 py-2 rounded border border-indigo-500/50 bg-indigo-500/20 text-indigo-300 transition-colors" : "flex items-center gap-2 px-3 py-2 rounded border border-slate-700 bg-slate-800 text-slate-400 transition-colors");
 
         DataManager.init();
-        setInterval(() => { if(tasks.length>0) UIManager.renderTasks(); }, 1000);
+        setInterval(() => { if (tasks.length > 0) UIManager.renderTasks(); }, 1000);
     </script>
 </body>
+
 </html>
